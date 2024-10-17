@@ -1,0 +1,28 @@
+# Ignore Maven target directory
+/target/
+
+# Ignore Python virtual environment directory
+/venv/
+/__pycache__/
+
+# Ignore Python bytecode files
+*.pyc
+
+# Ignore IntelliJ IDEA / VS Code settings
+/.idea/
+/.vscode/
+
+# Ignore macOS file
+.DS_Store
+
+# Ignore logs
+*.log
+
+# Ignore other OS and IDE-related files
+/.gradle/
+/*.iml
+/.classpath
+/.project
+
+# Ignore the Maven POM file generated in build
+pom.properties
