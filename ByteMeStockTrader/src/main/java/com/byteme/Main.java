@@ -6,9 +6,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 
-//import com.google.gson.JsonArray;
-//SE-2024Fall-ByteMe
-
 public class Main {
 
     public static void main(String[] args) {
@@ -28,7 +25,9 @@ public class Main {
             String workingDir = System.getProperty("user.dir");
             String[] sentimentCommand = { "python3", workingDir + "/ByteMeStockTrader/src/python/sentiment.py" };
 
-            System.out.println("WorkingDir: " + workingDir);
+            // System.out.println("WorkingDir: " + workingDir);
+
+            System.out.println("-" + titles.size() + " articles fetched from Yahoo Finance API.\n");
 
             // Create a process to run the Python script
             ProcessBuilder titlesSentimentAnalyzer = new ProcessBuilder(sentimentCommand);

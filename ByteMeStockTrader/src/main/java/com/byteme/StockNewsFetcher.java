@@ -14,17 +14,20 @@ public class StockNewsFetcher {
     private String symbol;
 
     StockNewsFetcher(String symbol) {
-        System.out.println("Fetching news for stock symbol: " + symbol);
         this.symbol = symbol;
     }
 
     private final String YAHOO_FINANCE_API_KEY = System.getenv("YAHOO_FINANCE_API_KEY");
 
+    // other API keys...
     // private final String NEWS_API_KEY = "your_newsapi_key_here";
     // private final String ALPHA_VANTAGE_KEY = "your_alpha_vantage_key_here";
 
     // Fetch articles using Yahoo Finance API DATA (RapidAPI)
     public ArrayList<String> fetchYahooFinanceApiTitles() throws Exception {
+
+        System.out.println("\n-Using Yahoo Finance API to fetch news related to " + symbol + " . . . \n");
+
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(
                         "https://yahoo-finance-api-data.p.rapidapi.com/news/list?symbol=" + symbol + "&limit=10"))
@@ -35,7 +38,6 @@ public class StockNewsFetcher {
 
         HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
 
-        // Parse the response into a JsonObject
         JsonObject jsonResponse = JsonParser.parseString(response.body()).getAsJsonObject();
 
         // Extract titles from the "stream" array under "data.main.stream"
