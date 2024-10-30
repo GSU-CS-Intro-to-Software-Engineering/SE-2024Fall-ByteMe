@@ -30,3 +30,5 @@ pip (Python package manager)
 7. Obtain YAHOO FINANCE API DATA api key
 
 8. Enter terminal and load API key into '~/.zshrc' as 'YAHOO_FINANCE_API_KEY' and save using 'source ~/.zshrc'
+
+9. next
