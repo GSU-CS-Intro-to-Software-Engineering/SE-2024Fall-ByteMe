@@ -61,3 +61,6 @@ public class TradingStrategy {
         return highestHigh - lowestLow;
     }
 }
+
+
+//wazzaappp

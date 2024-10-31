@@ -95,3 +95,4 @@ public class NumericalDataFetcher {
         return timeSeries;
     }
 }
+//wazzzapppp
