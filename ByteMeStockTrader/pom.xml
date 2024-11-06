@@ -15,6 +15,20 @@
     </properties>
 
     <dependencies>
+        <!-- Spring Boot Starter for creating RESTful APIs -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <version>3.1.4</version>
+        </dependency>
+
+        <!-- Thymeleaf template engine for UI rendering -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+            <version>3.1.4</version>
+        </dependency>
+
         <!-- Google Gson for JSON parsing -->
         <dependency>
             <groupId>com.google.code.gson</groupId>
@@ -39,7 +53,7 @@
 
     <build>
         <plugins>
-
+            <!-- Compiler Plugin for Java -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -50,6 +64,12 @@
                 </configuration>
             </plugin>
 
+            <!-- Spring Boot Maven Plugin for building and running Spring Boot applications -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>3.1.4</version>
+            </plugin>
         </plugins>
     </build>
 

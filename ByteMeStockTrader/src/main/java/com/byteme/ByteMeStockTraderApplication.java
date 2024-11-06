@@ -1,0 +1,11 @@
+package com.byteme;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class ByteMeStockTraderApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(ByteMeStockTraderApplication.class, args);
+    }
+}
