@@ -28,7 +28,7 @@ public class DatabaseHandler {
             String password = props.getProperty("db.password");
 
             connection = DriverManager.getConnection(url, username, password);
-            System.out.println("Connected to the MySQL database!");
+            System.out.println("\nConnected to the MySQL database!");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -46,9 +46,7 @@ public class DatabaseHandler {
                 "avg_3week_high DECIMAL(10, 2), " +
                 "avg_3week_low DECIMAL(10, 2), " +
                 "avg_3week_close DECIMAL(10, 2), " +
-                "avg_3week_volume BIGINT, " +
-                "recommended_action VARCHAR(10), " +
-                "amount_to_trade DECIMAL(20, 10)" +
+                "avg_3week_volume BIGINT" +
                 ");";
 
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -66,16 +64,15 @@ public class DatabaseHandler {
 
         String sql = "INSERT INTO stock_data (date, stock_name, num_positive_articles, num_neutral_articles, num_negative_articles, "
                 +
-                "avg_3week_open, avg_3week_high, avg_3week_low, avg_3week_close, avg_3week_volume, " +
-                "recommended_action, amount_to_trade) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
+                "avg_3week_open, avg_3week_high, avg_3week_low, avg_3week_close, avg_3week_volume) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
                 "ON DUPLICATE KEY UPDATE stock_name=VALUES(stock_name), num_positive_articles=VALUES(num_positive_articles), "
                 +
                 "num_neutral_articles=VALUES(num_neutral_articles), num_negative_articles=VALUES(num_negative_articles), "
                 +
                 "avg_3week_open=VALUES(avg_3week_open), avg_3week_high=VALUES(avg_3week_high), avg_3week_low=VALUES(avg_3week_low), "
                 +
-                "avg_3week_close=VALUES(avg_3week_close), avg_3week_volume=VALUES(avg_3week_volume), " +
-                "recommended_action=VALUES(recommended_action), amount_to_trade=VALUES(amount_to_trade);";
+                "avg_3week_close=VALUES(avg_3week_close), avg_3week_volume=VALUES(avg_3week_volume);";
 
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setDate(1, date);

@@ -26,7 +26,7 @@ public class StockNewsFetcher {
     // Fetch articles using Yahoo Finance API DATA (RapidAPI)
     public ArrayList<String> fetchYahooFinanceApiTitles() throws Exception {
 
-        System.out.println("\n-Using Yahoo Finance API to fetch news related to " + symbol + " . . . \n");
+        System.out.println("-Using Yahoo Finance API to fetch news related to " + symbol + " . . . \n");
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(
@@ -94,4 +94,3 @@ public class StockNewsFetcher {
      * }
      */
 }
-// wazzaappp
