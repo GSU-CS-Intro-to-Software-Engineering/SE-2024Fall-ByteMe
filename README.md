@@ -29,6 +29,7 @@ pip (Python package manager)
 
 7. Obtain YAHOO FINANCE API DATA api key
 
-8. Enter terminal and load API key into '~/.zshrc' as 'YAHOO_FINANCE_API_KEY' and save using 'source ~/.zshrc'
+8a. If on mac: Enter terminal and load API key into '~/.zshrc' as 'YAHOO_FINANCE_API_KEY' and save using 'source ~/.zshrc'
+8b. If on mac, add API key to user env variables under 'YAHOO_FINANCE_API_KEY'
 
-9. next
+9. run UI using "mvn spring-boot:run"

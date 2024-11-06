@@ -3,13 +3,22 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ByteMe Stock Trader</title>
-    <link rel="stylesheet" href="/css/style.css" />
+    <title>Automatic Stock Trader</title>
+    <link rel="stylesheet" href="/static/css/styles.css" />
+    <script defer src="/static/js/script.js"></script>
   </head>
   <body>
-    <h1>${message}</h1>
-    <p>
-      This is a basic user interface for the ByteMe Stock Trader application.
-    </p>
+    <div class="container">
+      <h1>Automatic Stock Trader</h1>
+      <p>Select your finance broker below!</p>
+
+      <!-- Broker selection buttons with a specific class for styling -->
+      <button class="broker-button" data-broker="Fidelity">Fidelity</button>
+      <button class="broker-button" data-broker="Robinhood">Robinhood</button>
+      <button class="broker-button" data-broker="Alpaca">Alpaca</button>
+
+      <!-- Next button to navigate to the login page, initially disabled -->
+      <button id="nextButton" disabled>Next</button>
+    </div>
   </body>
 </html>
