@@ -1,4 +1,4 @@
-package com.byteme;
+package com.byteme.DataRetreival;
 
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -42,7 +42,7 @@ public class NumericalDataFetcher {
         JsonObject jsonResponse = JsonParser.parseString(response.body()).getAsJsonObject();
         JsonObject timeSeries = jsonResponse.getAsJsonObject("Time Series (Daily)");
 
-        System.out.println("\nNumerical Data for " + symbol + " (Past 3 Weeks):");
+        JsonObject result = new JsonObject();
 
         double totalOpen = 0, totalHigh = 0, totalLow = 0, totalClose = 0;
         int totalVolume = 0, count = 0;
@@ -65,14 +65,6 @@ public class NumericalDataFetcher {
             double close = dayData.get("4. close").getAsDouble();
             int volume = dayData.get("5. volume").getAsInt();
 
-            if (volume < 0) {
-                System.err.println("Warning: Negative volume encountered on " + date + ": " + volume);
-                volume = 0;
-            }
-
-            System.out.println(date + " -> Open: " + open + ", High: " + high +
-                    ", Low: " + low + ", Close: " + close + ", Volume: " + volume);
-
             totalOpen += open;
             totalHigh += high;
             totalLow += low;
@@ -82,17 +74,13 @@ public class NumericalDataFetcher {
         }
 
         if (count > 0) {
-            System.out.println("\n3-Week Averages:");
-            System.out.println("Average Open: " + df.format(totalOpen / count));
-            System.out.println("Average High: " + df.format(totalHigh / count));
-            System.out.println("Average Low: " + df.format(totalLow / count));
-            System.out.println("Average Close: " + df.format(totalClose / count));
-            System.out.println("Average Volume: " + totalVolume / count);
-        } else {
-            System.out.println("No data available for the past 3 weeks.");
+            result.addProperty("averageOpen", totalOpen / count);
+            result.addProperty("averageHigh", totalHigh / count);
+            result.addProperty("averageLow", totalLow / count);
+            result.addProperty("averageClose", totalClose / count);
+            result.addProperty("averageVolume", totalVolume / count);
         }
 
-        return timeSeries;
+        return result;
     }
 }
-//wazzzapppp

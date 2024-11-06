@@ -13,7 +13,7 @@ Team Member 2: Atenea Caldera, ac34318@georgiasouthern.edu
 Python3 globally installed on your machine
 pip (Python package manager)
 
-## Running the Project
+## PROJECT SETUP
 
 1. Clone the repository: git clone [https://github.com/DanielTroyano/ByteMeStockTrader.git](https://github.com/GSU-CS-Intro-to-Software-Engineering/SE-2024Fall-ByteMe.git)
 
@@ -29,7 +29,16 @@ pip (Python package manager)
 
 7. Obtain YAHOO FINANCE API DATA api key
 
-8a. If on mac: Enter terminal and load API key into '~/.zshrc' as 'YAHOO_FINANCE_API_KEY' and save using 'source ~/.zshrc'
-8b. If on mac, add API key to user env variables under 'YAHOO_FINANCE_API_KEY'
+8. If on mac: Enter terminal and load API key into '~/.zshrc' as 'YAHOO_FINANCE_API_KEY' and save using 'source ~/.zshrc' || If on mac, add API key to user env variables under 'YAHOO_FINANCE_API_KEY'
 
-9. run UI using "mvn spring-boot:run"
+## RUNNING PROJECT
+
+1. Run Backend: (1) cd into /ByteMeStockTrader (2) Press play in the top right of Main.js
+
+2. Run Frontend: (1) cd into /ByteMeStockTrader (2) Use "mvn spring-boot:run" in terminal (3) Open localhost:8080 in browser
+
+## ERRORS
+
+1. If you get this error: "Error: LinkageError occurred while loading main class com.byteme.Main
+   java.lang.UnsupportedClassVersionError: com/byteme/Main has been compiled by a more recent version of the Java Runtime (class file version 66.0), this version of the Java Runtime only recognizes class file versions up to 65.0"
+   -> Run "mvn clean install" within /ByteMeStockTrader

@@ -26,3 +26,6 @@
 
 # Ignore the Maven POM file generated in build
 pom.properties
+
+# Ignore Daniel's ToDo List
+../goals.txt

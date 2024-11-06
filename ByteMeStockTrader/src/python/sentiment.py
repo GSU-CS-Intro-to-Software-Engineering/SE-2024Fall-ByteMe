@@ -7,10 +7,10 @@ device = 0 if torch.cuda.is_available() else -1
 
 if(torch.cuda.is_available()):
     device = 0
-    print("-FinBert analyzing article title sentiment using GPU . . .\n")
+    # print("-FinBert analyzing article title sentiment using GPU . . .\n")
 else:
     device = -1
-    print("-FinBert analyzing article title sentiment using CPU . . .\n")
+    # print("-FinBert analyzing article title sentiment using CPU . . .\n")
 
 # TODO 1: further train the model using custom dataset and trainer.train()
 # TODO 2: expand lexicon with more financial terms
@@ -43,8 +43,9 @@ if __name__ == "__main__":
         # Analyze sentiment for the batch of titles
         sentiments = analyze_sentiment_batch(titles)
         for title, sentiment in zip(titles, sentiments):
-            print(f"Title: {title}")
-            print(f"Sentiment: {sentiment}")
+
+            # print(f"Title: {title}")
+            # print(f"Sentiment: {sentiment}")
 
             # Increment counters based on sentiment label
             if sentiment['label'] == 'Positive':
@@ -54,10 +55,4 @@ if __name__ == "__main__":
             elif sentiment['label'] == 'Neutral':
                 neutral_count += 1
 
-        # Print out the counts
-        print("\nSentiment Summary:")
-        print(f"Positive Count: {positive_count}")
-        print(f"Negative Count: {negative_count}")
-        print(f"Neutral Count: {neutral_count}\n")
-
-# TODO 6: Store sentiment data in database
+        print(f"{positive_count},{negative_count},{neutral_count}")
