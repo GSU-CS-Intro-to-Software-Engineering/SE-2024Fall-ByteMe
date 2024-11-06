@@ -1,4 +1,4 @@
-/* styles.css */
+
 
 body {
   font-family: Arial, sans-serif;
@@ -44,14 +44,14 @@ button:hover {
   background-color: #0056b3;
 }
 
-/* Style for selected broker button */
+
 .broker-button.selected {
   background-color: #28a745;
   color: white;
   border: 2px solid #28a745;
 }
 
-/* Disabled Next button style */
+
 #nextButton:disabled {
   background-color: #cccccc;
   cursor: not-allowed;
