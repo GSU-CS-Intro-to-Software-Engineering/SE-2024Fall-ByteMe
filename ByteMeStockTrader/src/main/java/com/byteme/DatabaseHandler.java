@@ -62,7 +62,7 @@ public class DatabaseHandler {
     // Method to insert or update data in the stock_data table
     public void insertOrUpdateData(Date date, String stockName, int positiveCount, int neutralCount, int negativeCount,
             double avg3WeekOpen, double avg3WeekHigh, double avg3WeekLow,
-            double avg3WeekClose, long avg3WeekVolume, String action, double amountToTrade) {
+            double avg3WeekClose, long avg3WeekVolume) {
 
         String sql = "INSERT INTO stock_data (date, stock_name, num_positive_articles, num_neutral_articles, num_negative_articles, "
                 +
@@ -88,8 +88,6 @@ public class DatabaseHandler {
             pstmt.setDouble(8, avg3WeekLow);
             pstmt.setDouble(9, avg3WeekClose);
             pstmt.setLong(10, avg3WeekVolume);
-            pstmt.setString(11, action);
-            pstmt.setDouble(12, amountToTrade);
 
             pstmt.executeUpdate();
             System.out.println("Data successfully inserted/updated in the database.");

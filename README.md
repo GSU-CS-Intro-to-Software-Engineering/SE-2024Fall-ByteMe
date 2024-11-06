@@ -34,3 +34,7 @@ pip (Python package manager)
 9. Run Backend: (1) cd into /ByteMeStockTrader (2) Press play in the top right of Main.js
 
 10. Run Frontend: (1) cd into /ByteMeStockTrader (2) Use "mvn spring-boot:run" in terminal (3) Open localhost:8080 in browser
+
+- If you get this error: "Error: LinkageError occurred while loading main class com.byteme.Main
+  java.lang.UnsupportedClassVersionError: com/byteme/Main has been compiled by a more recent version of the Java Runtime (class file version 66.0), this version of the Java Runtime only recognizes class file versions up to 65.0"
+  -> Run "mvn clean install" within /ByteMeStockTrader

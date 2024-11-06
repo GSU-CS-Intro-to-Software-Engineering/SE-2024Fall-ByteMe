@@ -1,3 +1,5 @@
+//MODIFY THIS LATER TO WORK OFF OF THE STORED SQL DATA
+
 package com.byteme.DataRetreival;
 
 import com.google.gson.JsonObject;

@@ -11,6 +11,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.logging.Logger;
+import java.sql.Date;
 //import com.google.gson.JsonObject;
 //import java.util.logging.Logger;
 
@@ -19,6 +20,32 @@ public class Main {
     private static final Logger logger = Logger.getLogger(Main.class.getName());
 
     public static void main(String[] args) {
+
+        // (0) Connect to MySQL Database:
+        // Create an instance of DatabaseHandler to handle database operations
+        DatabaseHandler dbHandler = new DatabaseHandler();
+
+        // Initialize the table (if not already created)
+        dbHandler.initializeTable();
+
+        // Insert mock data to test the connection and insertion functionality
+        Date currentDate = new Date(System.currentTimeMillis());
+        String stockName = "NVDA";
+        int positiveCount = 5;
+        int neutralCount = 10;
+        int negativeCount = 3;
+        double avg3WeekOpen = 140.00;
+        double avg3WeekHigh = 142.00;
+        double avg3WeekLow = 138.00;
+        double avg3WeekClose = 139.00;
+        long avg3WeekVolume = 100000000;
+
+        // Insert or update the mock data
+        dbHandler.insertOrUpdateData(currentDate, stockName, positiveCount, neutralCount, negativeCount,
+                avg3WeekOpen, avg3WeekHigh, avg3WeekLow, avg3WeekClose, avg3WeekVolume);
+
+        // Close the database connection
+        dbHandler.closeConnection();
 
         // (1) UI for the user to input the stock symbol (Ate)
 
@@ -33,11 +60,13 @@ public class Main {
 
             // (4) Build the command to execute Python script for sentiment analysis
             String workingDir = System.getProperty("user.dir");
-            String[] sentimentCommand = { "python3", workingDir + "/ByteMeStockTrader/src/python/sentiment.py" };
+            String[] sentimentCommand = { "python3", workingDir +
+                    "/ByteMeStockTrader/src/python/sentiment.py" };
 
             // System.out.println("WorkingDir: " + workingDir);
 
-            System.out.println("-" + titles.size() + " articles fetched from Yahoo Finance API.\n");
+            System.out.println("-" + titles.size() +
+                    " articles fetched from Yahoo Finance API.\n");
 
             // Create a process to run the Python script
             ProcessBuilder titlesSentimentAnalyzer = new ProcessBuilder(sentimentCommand);
@@ -69,7 +98,7 @@ public class Main {
         }
 
         try { // Corbin's code
-              // Step 1: Initialize the NumericalDataFetcher with a stock symbol
+            // Step 1: Initialize the NumericalDataFetcher with a stock symbol
             String stockSymbol = "NVDA"; // Example symbol
             NumericalDataFetcher dataFetcher = new NumericalDataFetcher(stockSymbol);
 
