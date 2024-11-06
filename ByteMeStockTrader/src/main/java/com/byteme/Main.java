@@ -1,5 +1,8 @@
 package com.byteme;
 
+import com.byteme.DataRetreival.NumericalDataFetcher;
+import com.byteme.DataRetreival.StockNewsFetcher;
+import com.byteme.DataRetreival.TradingStrategy;
 import com.google.gson.JsonObject;
 
 import java.io.BufferedReader;
@@ -8,8 +11,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.logging.Logger;
-import com.google.gson.JsonObject;
-import java.util.logging.Logger;
+//import com.google.gson.JsonObject;
+//import java.util.logging.Logger;
 
 public class Main {
 
@@ -22,7 +25,7 @@ public class Main {
         // (2) Instantiate the StockNewsFetcher with selected symbol
         StockNewsFetcher newsFetcher = new StockNewsFetcher("NVDA");
 
-        try { //Daniel's code
+        try { // Daniel's code
 
             // (3) Fetch stock article titles
             ArrayList<String> titles = newsFetcher.fetchYahooFinanceApiTitles();
@@ -46,7 +49,7 @@ public class Main {
                 writer.write(title);
                 writer.newLine();
 
-                System.out.println("Article: " + title);
+                // System.out.println("Article: " + title);
 
             }
             writer.close();
@@ -65,8 +68,8 @@ public class Main {
             e.printStackTrace();
         }
 
-        try { //Corbin's code
-            // Step 1: Initialize the NumericalDataFetcher with a stock symbol
+        try { // Corbin's code
+              // Step 1: Initialize the NumericalDataFetcher with a stock symbol
             String stockSymbol = "NVDA"; // Example symbol
             NumericalDataFetcher dataFetcher = new NumericalDataFetcher(stockSymbol);
 
@@ -97,4 +100,3 @@ public class Main {
         }
     }
 }
-//wazzaappp

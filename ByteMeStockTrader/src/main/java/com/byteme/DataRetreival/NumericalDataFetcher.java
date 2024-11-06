@@ -1,4 +1,4 @@
-package com.byteme;
+package com.byteme.DataRetreival;
 
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -81,18 +81,19 @@ public class NumericalDataFetcher {
             count++;
         }
 
-        if (count > 0) {
-            System.out.println("\n3-Week Averages:");
-            System.out.println("Average Open: " + df.format(totalOpen / count));
-            System.out.println("Average High: " + df.format(totalHigh / count));
-            System.out.println("Average Low: " + df.format(totalLow / count));
-            System.out.println("Average Close: " + df.format(totalClose / count));
-            System.out.println("Average Volume: " + totalVolume / count);
-        } else {
-            System.out.println("No data available for the past 3 weeks.");
-        }
+        /*
+         * if (count > 0) {
+         * System.out.println("\n3-Week Averages:");
+         * System.out.println("Average Open: " + df.format(totalOpen / count));
+         * System.out.println("Average High: " + df.format(totalHigh / count));
+         * System.out.println("Average Low: " + df.format(totalLow / count));
+         * System.out.println("Average Close: " + df.format(totalClose / count));
+         * System.out.println("Average Volume: " + totalVolume / count);
+         * } else {
+         * System.out.println("No data available for the past 3 weeks.");
+         * }
+         */
 
         return timeSeries;
     }
 }
-//wazzzapppp

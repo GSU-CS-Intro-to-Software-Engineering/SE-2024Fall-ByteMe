@@ -29,7 +29,8 @@ pip (Python package manager)
 
 7. Obtain YAHOO FINANCE API DATA api key
 
-8a. If on mac: Enter terminal and load API key into '~/.zshrc' as 'YAHOO_FINANCE_API_KEY' and save using 'source ~/.zshrc'
-8b. If on mac, add API key to user env variables under 'YAHOO_FINANCE_API_KEY'
+8. If on mac: Enter terminal and load API key into '~/.zshrc' as 'YAHOO_FINANCE_API_KEY' and save using 'source ~/.zshrc' || If on mac, add API key to user env variables under 'YAHOO_FINANCE_API_KEY'
 
-9. run UI using "mvn spring-boot:run"
+9. Run Backend: (1) cd into /ByteMeStockTrader (2) Press play in the top right of Main.js
+
+10. Run Frontend: (1) cd into /ByteMeStockTrader (2) Use "mvn spring-boot:run" in terminal (3) Open localhost:8080 in browser

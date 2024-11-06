@@ -1,4 +1,4 @@
-package com.byteme;
+package com.byteme.DataRetreival;
 
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -13,7 +13,7 @@ public class StockNewsFetcher {
 
     private String symbol;
 
-    StockNewsFetcher(String symbol) {
+    public StockNewsFetcher(String symbol) {
         this.symbol = symbol;
     }
 
@@ -94,4 +94,4 @@ public class StockNewsFetcher {
      * }
      */
 }
-//wazzaappp
+// wazzaappp

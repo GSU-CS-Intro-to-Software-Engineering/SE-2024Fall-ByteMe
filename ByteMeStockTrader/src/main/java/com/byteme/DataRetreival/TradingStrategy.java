@@ -1,4 +1,4 @@
-package com.byteme;
+package com.byteme.DataRetreival;
 
 import com.google.gson.JsonObject;
 
@@ -61,6 +61,3 @@ public class TradingStrategy {
         return highestHigh - lowestLow;
     }
 }
-
-
-//wazzaappp
