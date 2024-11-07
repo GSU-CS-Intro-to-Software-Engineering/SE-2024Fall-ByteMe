@@ -4,23 +4,29 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Login - Automatic Stock Trader</title>
-    <link rel="stylesheet" href="/static/css/styles.css" />
-    <script defer src="/static/js/script.js"></script>
+    <link rel="stylesheet" href="/css/styles.css" />
+    <script defer src="/js/script.js"></script>
   </head>
   <body>
     <div class="container">
       <h1>Automatic Stock Trader</h1>
-      <p>Log in to your selected broker: <span id="brokerName"></span></p>
+      <p>Securely log into your <span id="brokerName"></span> account</p>
 
       <form>
-        <label for="username">Username:</label>
-        <input type="text" id="username" name="username" required />
+        <div class="form-group">
+          <label for="username">Username:</label>
+          <input type="text" id="username" name="username" required />
+        </div>
 
-        <label for="password">Password:</label>
-        <input type="password" id="password" name="password" required />
+        <div class="form-group">
+          <label for="password">Password:</label>
+          <input type="password" id="password" name="password" required />
+        </div>
 
-        <button type="button" id="enterButton">Enter</button>
-        <button type="button" id="backButton">Back</button>
+        <div class="button-group">
+          <button type="button" id="backButton">Back</button>
+          <button type="button" id="enterButton">Enter</button>
+        </div>
       </form>
     </div>
   </body>

@@ -33,9 +33,7 @@ pip (Python package manager)
 
 ## RUNNING PROJECT
 
-1. Run Backend: (1) cd into /ByteMeStockTrader (2) Press play in the top right of Main.js
-
-2. Run Frontend: (1) cd into /ByteMeStockTrader (2) Use "mvn spring-boot:run" in terminal (3) Open localhost:8080 in browser
+1. Run Frontend connected with Backend: (1) cd into /ByteMeStockTrader (1.5) Run "mvn clean install (2) Run "mvn spring-boot:run" (3) Open localhost:8080 in browser
 
 ## ERRORS
 

@@ -4,21 +4,21 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Automatic Stock Trader</title>
-    <link rel="stylesheet" href="/static/css/styles.css" />
-    <script defer src="/static/js/script.js"></script>
+    <link rel="stylesheet" href="/css/styles.css" />
+    <script defer src="/js/script.js"></script>
   </head>
   <body>
     <div class="container">
       <h1>Automatic Stock Trader</h1>
-      <p>Select your finance broker below!</p>
+      <p>Select your finance broker below:</p>
 
-     
-      <button class="broker-button" data-broker="Fidelity">Fidelity</button>
-      <button class="broker-button" data-broker="Robinhood">Robinhood</button>
-      <button class="broker-button" data-broker="Alpaca">Alpaca</button>
+      <div class="button-group">
+        <button class="broker-button" data-broker="Fidelity">Fidelity</button>
+        <button class="broker-button" data-broker="Robinhood">Robinhood</button>
+        <button class="broker-button" data-broker="Alpaca">Alpaca</button>
+      </div>
 
-      
-      <button id="nextButton" disabled>Next</button>
+      <button id="nextButton" class="next-button" disabled>Next</button>
     </div>
   </body>
 </html>

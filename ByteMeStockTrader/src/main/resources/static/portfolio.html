@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Portfolio Hub</title>
+    <link rel="stylesheet" href="/css/styles.css" />
+    <script defer src="/js/script.js"></script>
+  </head>
+  <body>
+    <div class="portfolio-container">
+      <div class="header">
+        <h1>Auto Trader Hub</h1>
+        <button id="tradingStatusButton" class="trading-button active">
+          Actively Trading
+        </button>
+      </div>
+      <p>Viewing data for: <span id="selectedStock">NVDA</span></p>
+
+      <div class="stock-data">
+        <h2>Mock Data for <span id="stockSymbol">NVDA</span></h2>
+        <ul>
+          <li>Price: $150.00</li>
+          <li>Daily Change: +2.5%</li>
+          <li>Volume: 1.5M</li>
+          <li>Market Cap: $1.5T</li>
+        </ul>
+      </div>
+
+      <div class="feed">
+        <h3>Recent Activity</h3>
+        <div class="feed-content" id="feedContent">
+          <p>Update 1: Market fluctuations observed...</p>
+          <p>Update 2: Strong buy signal for NVDA...</p>
+          <p>Update 3: Stock volume hits new high...</p>
+          <p>Update 4: Analysis shows upward trend...</p>
+          <p>Update 5: Consider rebalancing portfolio...</p>
+          <p>Update 6: NVDA surpasses target...</p>
+          <p>Update 7: End-of-day summary...</p>
+        </div>
+      </div>
+
+      <div class="button-group">
+        <button type="button" onclick="fetchStockData()">Fetch Data</button>
+        <button
+          type="button"
+          onclick="window.location.href='/stock-selection.html'"
+        >
+          Change Stock
+        </button>
+      </div>
+    </div>
+
+    <script>
+      async function fetchStockData() {
+        const selectedStock =
+          document.getElementById("selectedStock").textContent;
+
+        // Fetch data from backend
+        const response = await fetch(`/api/trade?symbol=${selectedStock}`);
+        const data = await response.json();
+
+        // Reference to feed content
+        const feedContent = document.getElementById("feedContent");
+
+        if (data.error) {
+          feedContent.insertAdjacentHTML("afterbegin", `<p>${data.error}</p>`);
+          return;
+        }
+
+        // Prepend the new fetched data to the top of feed content
+        const newDataHtml = `
+        <p>Symbol: ${data.symbol}</p>
+        <p>Positive Sentiment: ${data.positiveSentiment}</p>
+        <p>Neutral Sentiment: ${data.neutralSentiment}</p>
+        <p>Negative Sentiment: ${data.negativeSentiment}</p>
+        <p>Average Open: ${data.averageOpen}</p>
+        <p>Average High: ${data.averageHigh}</p>
+        <p>Average Low: ${data.averageLow}</p>
+        <p>Average Close: ${data.averageClose}</p>
+        <p>Average Volume: ${data.averageVolume}</p>
+      `;
+
+        // Insert new data at the top
+        feedContent.insertAdjacentHTML("afterbegin", newDataHtml);
+      }
+    </script>
+  </body>
+</html>
