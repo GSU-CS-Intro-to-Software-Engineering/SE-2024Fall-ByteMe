@@ -15,10 +15,10 @@
           Actively Trading
         </button>
       </div>
-      <p>Viewing data for: <span id="selectedStock"></span></p>
+      <p>Viewing data for: <span id="selectedStock">NVDA</span></p>
 
       <div class="stock-data">
-        <h2>Mock Data for <span id="stockSymbol"></span></h2>
+        <h2>Mock Data for <span id="stockSymbol">NVDA</span></h2>
         <ul>
           <li>Price: $150.00</li>
           <li>Daily Change: +2.5%</li>
@@ -29,7 +29,7 @@
 
       <div class="feed">
         <h3>Recent Activity</h3>
-        <div class="feed-content">
+        <div class="feed-content" id="feedContent">
           <p>Update 1: Market fluctuations observed...</p>
           <p>Update 2: Strong buy signal for NVDA...</p>
           <p>Update 3: Stock volume hits new high...</p>
@@ -40,12 +40,50 @@
         </div>
       </div>
 
-      <button
-        type="button"
-        onclick="window.location.href='/stock-selection.html'"
-      >
-        Change Stock
-      </button>
+      <div class="button-group">
+        <button type="button" onclick="fetchStockData()">Fetch Data</button>
+        <button
+          type="button"
+          onclick="window.location.href='/stock-selection.html'"
+        >
+          Change Stock
+        </button>
+      </div>
     </div>
+
+    <script>
+      async function fetchStockData() {
+        const selectedStock =
+          document.getElementById("selectedStock").textContent;
+
+        // Fetch data from backend
+        const response = await fetch(`/api/trade?symbol=${selectedStock}`);
+        const data = await response.json();
+
+        // Reference to feed content
+        const feedContent = document.getElementById("feedContent");
+
+        if (data.error) {
+          feedContent.insertAdjacentHTML("afterbegin", `<p>${data.error}</p>`);
+          return;
+        }
+
+        // Prepend the new fetched data to the top of feed content
+        const newDataHtml = `
+        <p>Symbol: ${data.symbol}</p>
+        <p>Positive Sentiment: ${data.positiveSentiment}</p>
+        <p>Neutral Sentiment: ${data.neutralSentiment}</p>
+        <p>Negative Sentiment: ${data.negativeSentiment}</p>
+        <p>Average Open: ${data.averageOpen}</p>
+        <p>Average High: ${data.averageHigh}</p>
+        <p>Average Low: ${data.averageLow}</p>
+        <p>Average Close: ${data.averageClose}</p>
+        <p>Average Volume: ${data.averageVolume}</p>
+      `;
+
+        // Insert new data at the top
+        feedContent.insertAdjacentHTML("afterbegin", newDataHtml);
+      }
+    </script>
   </body>
 </html>

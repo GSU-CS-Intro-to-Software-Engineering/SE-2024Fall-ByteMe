@@ -2,53 +2,44 @@ package com.byteme;
 
 import com.byteme.DataRetreival.NumericalDataFetcher;
 import com.byteme.DataRetreival.StockNewsFetcher;
-import com.byteme.DataRetreival.TradingStrategy;
 import com.google.gson.JsonObject;
+import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.util.ArrayList;
 import java.sql.Date;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
-public class Main {
+@Service
+public class StockService {
 
-    public static void main(String[] args) {
-
-        String chosenSymbol = "NVDA";
-
-        // TODO: Connect UI to this main method
-
-        gatherStockData(chosenSymbol);
-
-        // checkIfShoudBuySellHold(chosenSymbol);
-
-    }
-
-    public static void gatherStockData(String symbol) {
-
+    public Map<String, Object> gatherStockData(String symbol) {
+        Map<String, Object> result = new HashMap<>();
         int[] newsSentiment = gatherNewsSentiment(symbol);
-
-        if (newsSentiment == null) {
-            System.out.println("Failed to gather news sentiment data. Exiting.");
-            return;
-        }
-
         int[] numericData = gatherNumericData(symbol);
 
-        if (numericData == null) {
-            System.out.println("Failed to gather numerical data. Exiting.");
-            return;
+        if (newsSentiment == null || numericData == null) {
+            result.put("error", "Failed to gather stock data.");
+            return result;
         }
 
-        boolean uploadData = uploadDataToDatabase(symbol, newsSentiment, numericData);
+        boolean uploadSuccess = uploadDataToDatabase(symbol, newsSentiment, numericData);
+        result.put("uploadSuccess", uploadSuccess);
+        result.put("symbol", symbol);
+        result.put("positiveSentiment", newsSentiment[0]);
+        result.put("neutralSentiment", newsSentiment[1]);
+        result.put("negativeSentiment", newsSentiment[2]);
+        result.put("averageOpen", numericData[0]);
+        result.put("averageHigh", numericData[1]);
+        result.put("averageLow", numericData[2]);
+        result.put("averageClose", numericData[3]);
+        result.put("averageVolume", numericData[4]);
 
-        if (uploadData) {
-            System.out.println("Data uploaded successfully!");
-        } else {
-            System.out.println("Failed to upload data. Exiting.");
-        }
+        return result;
     }
 
     public static int[] gatherNewsSentiment(String symbol) {
@@ -60,14 +51,13 @@ public class Main {
 
             // Fetch stock article titles
             ArrayList<String> titles = newsFetcher.fetchYahooFinanceApiTitles();
+            System.out.println("-" + titles.size() + " articles fetched from Yahoo Finance API.\n");
 
             // TODO: Add more sources here (News API, Alpha Vantage, etc.)
 
             // Build the command to execute Python script for sentiment analysis
             String workingDir = System.getProperty("user.dir");
-            String[] sentimentCommand = { "python3", workingDir + "/ByteMeStockTrader/src/python/sentiment.py" };
-
-            System.out.println("-" + titles.size() + " articles fetched from Yahoo Finance API.\n");
+            String[] sentimentCommand = { "python3", workingDir + "/src/python/sentiment.py" }; // "/ByteMeStockTrader/src/python/sentiment.py"
 
             // Create a process to run the Python script
             ProcessBuilder titlesSentimentAnalyzer = new ProcessBuilder(sentimentCommand);
@@ -167,5 +157,4 @@ public class Main {
             return false;
         }
     }
-
 }
