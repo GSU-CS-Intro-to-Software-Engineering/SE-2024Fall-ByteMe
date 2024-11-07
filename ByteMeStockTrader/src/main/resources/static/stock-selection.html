@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Select a Stock</title>
+    <link rel="stylesheet" href="/css/styles.css" />
+    <script defer src="/js/script.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Select a Stock</h1>
+      <p>Choose a stock to trade:</p>
+
+      <div class="button-group">
+        <button class="stock-button" data-stock="NVDA">NVDA</button>
+        <button class="stock-button" data-stock="AAPL">AAPL</button>
+        <button class="stock-button" data-stock="MSFT">MSFT</button>
+        <button class="stock-button" data-stock="TSLA">TSLA</button>
+      </div>
+
+      <button type="button" onclick="window.location.href='/login.html'">
+        Back
+      </button>
+      <button id="stockNextButton" disabled>Next</button>
+    </div>
+  </body>
+</html>
