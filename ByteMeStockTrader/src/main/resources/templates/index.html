@@ -8,17 +8,52 @@
     <script defer src="/js/script.js"></script>
   </head>
   <body>
-    <div class="container">
-      <h1>Automatic Stock Trader</h1>
-      <p>Select your finance broker below:</p>
+    <div class="banner">Byte Me Inc. 🤖</div>
+    <div class="main-content">
+      <div class="container">
+        <h1>Welcome to financial freedom</h1>
+        <p>Select your finance broker to get started:</p>
 
-      <div class="button-group">
-        <button class="broker-button" data-broker="Fidelity">Fidelity</button>
-        <button class="broker-button" data-broker="Robinhood">Robinhood</button>
-        <button class="broker-button" data-broker="Alpaca">Alpaca</button>
+        <div class="broker-button-group">
+          <button class="broker-button" data-broker="Fidelity">Fidelity</button>
+          <button class="broker-button" data-broker="Robinhood">
+            Robinhood
+          </button>
+          <button class="broker-button" data-broker="Alpaca">Alpaca</button>
+        </div>
+
+        <button id="nextButton" class="next-button" disabled>Continue</button>
+
+        <!-- Carousel Section -->
+        <div class="carousel-container">
+          <div class="carousel">
+            <div class="quote-box">
+              <img src="../images/user1.jpg" alt="User 1" class="user-image" />
+              <blockquote>
+                "Using Automatic Stock Trader made investing so much easier. I’m
+                now more confident with my trades!"
+              </blockquote>
+              <p class="user-name">- Alex J.</p>
+            </div>
+            <div class="quote-box">
+              <img src="../images/user2.jpg" alt="User 2" class="user-image" />
+              <blockquote>
+                "This app helped me automate my stock trading, saving me hours
+                each week!"
+              </blockquote>
+              <p class="user-name">- Jamie K.</p>
+            </div>
+            <div class="quote-box">
+              <img src="../images/user3.jpg" alt="User 3" class="user-image" />
+              <blockquote>
+                "I can focus on my day job while Automatic Stock Trader handles
+                my investments efficiently."
+              </blockquote>
+              <p class="user-name">- Taylor R.</p>
+            </div>
+          </div>
+        </div>
       </div>
-
-      <button id="nextButton" class="next-button" disabled>Next</button>
     </div>
   </body>
 </html>
