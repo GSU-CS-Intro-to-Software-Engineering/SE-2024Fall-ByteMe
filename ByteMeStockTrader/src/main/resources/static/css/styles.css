@@ -1,30 +1,58 @@
 /* General Styling */
-body {
+body, html {
   font-family: Arial, sans-serif;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
   margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
   background-color: #f0f2f5;
 }
 
-.container {
+.banner {
+  background-color: #007bff;
+  color: #ffffff;
+  width: 100%;
+  padding: 15px 0;
   text-align: center;
-  min-width: 400px;
-  max-width: 400px;
-  min-height: 320px;
-  max-height: 320px;
-  padding: 30px;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  background-color: #ffffff;
+  font-size: 1.5rem;
+  font-weight: bold;
+  position: fixed;
+  top: 0;
+  z-index: 100;
 }
 
+.main-content {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-top: 60px; 
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+/* Container Styling */
+.container {
+  text-align: center;
+  width: 98%;
+  height: 97%;
+  padding: 40px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+/* Header Styling */
 h1 {
   color: #333;
-  margin-bottom: 10px;
+  margin-bottom: 20px;
 }
 
 p {
@@ -35,13 +63,39 @@ p {
 /* Button Styling */
 .button-group {
   display: flex;
-  justify-content: space-around;
-  margin: 20px 0;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
   width: 100%;
+  margin-top: 20px;
 }
 
+.broker-button-group {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  width: 100%;
+  margin-top: 40px;
+}
+
+.login-button-group {
+  display: flex;
+  justify-content: center;
+  text-align: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  width: 50%;
+  margin: 0 auto;
+}
+
+
 #backButton,
-#enterButton {
+#enterButton
+#stockNextButton,
+#stockBackButton,
+#fetchDataButton,
+#changeStockButton {
   padding: 10px;
   font-size: 14px;
   color: white;
@@ -50,6 +104,13 @@ p {
   cursor: pointer;
   transition: background-color 0.3s ease;
   max-width: 35%;
+}
+
+#tradingStatusButton {
+  min-width: 150px;
+  max-width: 160px;
+  min-height: 30px;
+  max-height: 40px;
 }
 
 
@@ -77,9 +138,10 @@ p {
 }
 
 /* Specific Button Styles */
-.next-button, #backButton, #enterButton {
-  width: 100%;
+.next-button, #backButton, #enterButton, #stockNextButton, #stockBackButton, #fetchDataButton, #changeStockButton {
+  width: 30%;
   padding: 10px;
+  margin-top: 20px;
   font-size: 16px;
   color: white;
   border: none;
@@ -90,6 +152,7 @@ p {
 
 .next-button {
   background-color: #007bff;
+  max-width: 150px;
 }
 
 .next-button:not(:disabled) {
@@ -97,19 +160,19 @@ p {
   background-color: #0056b3;
 }
 
-#backButton {
+#backButton, #stockBackButton, #changeStockButton {
   background-color: #6c757d;
 }
 
-#backButton:hover {
+#backButton:hover, #stockBackButton:hover, #changeStockButton:hover {
   background-color: #5a6268;
 }
 
-#enterButton {
+#enterButton, #stockNextButton, #fetchDataButton {
   background-color: #007bff;
 }
 
-#enterButton:hover {
+#enterButton:hover, #stockNextButton:hover, #fetchDataButton:hover {
   background-color: #0056b3;
 }
 
@@ -138,7 +201,7 @@ form {
 .form-group {
   display: flex;
   flex-direction: column;
-  width: 100%;
+  width: 50%;
   margin-bottom: 15px;
   text-align: left;
 }
@@ -159,7 +222,7 @@ form {
 /* Portfolio Page Styling */
 .portfolio-container {
   text-align: center;
-  max-width: 800px;
+  max-width: 1000px;
   min-width: 500px;
   margin: 0 auto;
   padding: 30px;
@@ -225,4 +288,59 @@ form {
 .feed-content p {
   font-size: 14px;
   margin: 8px 0;
+}
+
+/* Carousel Styling */
+.carousel-container {
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+  width: 100%;
+  margin-top: 50px;
+  position: relative;
+}
+
+.carousel {
+  display: flex;
+  gap: 10px;
+  transition: transform 0.5s ease;
+}
+
+.quote-box {
+  flex: 0 0 80%;
+  max-width: 250px;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  background-color: #fafafa;
+  text-align: center;
+  opacity: 0.5;
+  transform: scale(0.85);
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  cursor: pointer;
+}
+
+.quote-box.focused {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.user-image {
+  width: 200px;
+  height: auto;
+  border-radius: 10px;
+  margin-bottom: 15px;
+}
+
+blockquote {
+  font-style: italic;
+  color: #555;
+  margin: 10px 0;
+}
+
+.user-name {
+  font-weight: bold;
+  color: #333;
+  margin-top: 10px;
+  font-size: 14px;
 }

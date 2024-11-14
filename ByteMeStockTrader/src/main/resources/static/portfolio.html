@@ -8,46 +8,51 @@
     <script defer src="/js/script.js"></script>
   </head>
   <body>
-    <div class="portfolio-container">
-      <div class="header">
-        <h1>Auto Trader Hub</h1>
-        <button id="tradingStatusButton" class="trading-button active">
-          Actively Trading
-        </button>
-      </div>
-      <p>Viewing data for: <span id="selectedStock">NVDA</span></p>
-
-      <div class="stock-data">
-        <h2>Mock Data for <span id="stockSymbol">NVDA</span></h2>
-        <ul>
-          <li>Price: $150.00</li>
-          <li>Daily Change: +2.5%</li>
-          <li>Volume: 1.5M</li>
-          <li>Market Cap: $1.5T</li>
-        </ul>
-      </div>
-
-      <div class="feed">
-        <h3>Recent Activity</h3>
-        <div class="feed-content" id="feedContent">
-          <p>Update 1: Market fluctuations observed...</p>
-          <p>Update 2: Strong buy signal for NVDA...</p>
-          <p>Update 3: Stock volume hits new high...</p>
-          <p>Update 4: Analysis shows upward trend...</p>
-          <p>Update 5: Consider rebalancing portfolio...</p>
-          <p>Update 6: NVDA surpasses target...</p>
-          <p>Update 7: End-of-day summary...</p>
+    <div class="banner">Byte Me Inc. 🤖</div>
+    <div class="main-content">
+      <div class="container">
+        <div class="header">
+          <h1>Auto Trader Hub</h1>
+          <button id="tradingStatusButton" class="trading-button active">
+            Actively Trading
+          </button>
         </div>
-      </div>
+        <p>Viewing data for: <span id="selectedStock">NVDA</span></p>
 
-      <div class="button-group">
-        <button type="button" onclick="fetchStockData()">Fetch Data</button>
-        <button
-          type="button"
-          onclick="window.location.href='/stock-selection.html'"
-        >
-          Change Stock
-        </button>
+        <div class="stock-data">
+          <h2>Mock Data for <span id="stockSymbol">NVDA</span></h2>
+          <ul>
+            <li>Price: $150.00</li>
+            <li>Daily Change: +2.5%</li>
+            <li>Volume: 1.5M</li>
+            <li>Market Cap: $1.5T</li>
+          </ul>
+        </div>
+
+        <div class="feed">
+          <h3>Recent Activity</h3>
+          <div class="feed-content" id="feedContent">
+            <p>Update 1: Market fluctuations observed...</p>
+            <p>Update 2: Strong buy signal for NVDA...</p>
+            <p>Update 3: Stock volume hits new high...</p>
+            <p>Update 4: Analysis shows upward trend...</p>
+            <p>Update 5: Consider rebalancing portfolio...</p>
+            <p>Update 6: NVDA surpasses target...</p>
+            <p>Update 7: End-of-day summary...</p>
+          </div>
+        </div>
+
+        <div class="login-button-group">
+          <button id="fetchDataButton" onclick="fetchStockData()">
+            Fetch Data
+          </button>
+          <button
+            id="changeStockButton"
+            onclick="window.location.href='/stock-selection.html'"
+          >
+            Change Stock
+          </button>
+        </div>
       </div>
     </div>
 
