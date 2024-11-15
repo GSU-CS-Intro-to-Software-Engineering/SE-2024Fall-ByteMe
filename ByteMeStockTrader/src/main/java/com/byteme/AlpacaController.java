@@ -12,7 +12,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
-public class AuthenticationController {
+public class AlpacaController {
 
     @PostMapping("/authenticate")
     public ResponseEntity<?> authenticate(@RequestBody Map<String, String> credentials) {
@@ -48,4 +48,7 @@ public class AuthenticationController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid API credentials");
         }
     }
+
+    // @GetMapping("/execute-trade")
+
 }
