@@ -89,6 +89,16 @@ p {
   margin: 0 auto;
 }
 
+.trading-type-button-group {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  width: 100%;
+  margin-top: 20px;
+  margin-bottom: 5px;
+}
+
 
 #backButton,
 #enterButton
@@ -191,6 +201,49 @@ p {
   border-color: #ffc107;
 }
 
+#paperButton,
+#cashButton {
+  width: 120px; /* Large square size */
+  height: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: white;
+  background-color: gray; /* Default gray */
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin: 10px; /* Add spacing between buttons */
+}
+
+/* Styling for when a button is selected */
+#paperButton.selected{
+  background-color: #007bff; /* Blue when selected */
+}
+
+#cashButton.selected {
+  background-color: #3CB371; /* Blue when selected */
+}
+
+/* Hover effect for all states */
+#paperButton:hover{
+  background-color: #0056b3;
+}
+
+#cashButton:hover {
+  background-color: #34a467;
+}
+
+/* Icon styling (emoji above text) */
+#paperButton span,
+#cashButton span {
+  display: block;
+  font-size: 36px; /* Larger font size for emoji */
+  margin-bottom: 5px; /* Space between icon and text */
+}
 /* Login Form Styling */
 form {
   display: flex;
@@ -343,4 +396,78 @@ blockquote {
   color: #333;
   margin-top: 10px;
   font-size: 14px;
+}
+
+/* Help getting API keys modal */
+
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.5);
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background-color: #fff;
+  margin: auto;
+  padding: 20px;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 400px;
+  text-align: left;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.modal-body {
+  font-size: 16px;
+  line-height: 1.5;
+  margin-bottom: 15px;
+}
+
+.modal-close {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 14px;
+  border-radius: 5px;
+  cursor: pointer;
+  display: block;
+  margin-left: auto;
+}
+
+.info-icon {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  line-height: 12px;
+  text-align: center;
+  border: 2px solid #007bff;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: bold;
+  color: #007bff;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  position: relative;
+  top: -2px; /* Adjust this value to fine-tune alignment */
+}
+
+.info-icon:hover {
+  background-color: #007bff;
+  color: white;
+  transform: scale(1.1);
 }

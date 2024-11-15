@@ -12,24 +12,67 @@
     <div class="main-content">
       <div class="container">
         <h1>Automatic Stock Trader</h1>
-        <p>Securely log into your <span id="brokerName"></span> account</p>
+        <p>
+          Securely log into your Alpaca account with API credentials
+          <span class="info-icon" id="infoIcon">i</span>
+        </p>
 
-        <form>
+        <form id="loginForm">
           <div class="form-group">
-            <label for="username">Username:</label>
-            <input type="text" id="username" name="username" required />
+            <label for="apiKey">API Key:</label>
+            <input type="text" id="apiKey" name="apiKey" required />
           </div>
 
           <div class="form-group">
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required />
+            <label for="apiSecret">Secret Key:</label>
+            <input type="password" id="apiSecret" name="apiSecret" required />
+          </div>
+
+          <div class="trading-type-button-group">
+            <button type="button" id="paperButton"><span>📑</span>Paper</button>
+            <button type="button" id="cashButton"><span>💵</span>Cash</button>
           </div>
 
           <div class="login-button-group">
             <button type="button" id="backButton">Back</button>
-            <button type="button" id="enterButton">Enter</button>
+            <button type="submit" id="enterButton">Enter</button>
           </div>
         </form>
+
+        <p style="text-align: center; margin-top: 15px">
+          Don't have an Alpaca trading account? Click
+          <a
+            href="https://app.alpaca.markets/signup?amp_device_id=w69_k3m94hZZNeMlVgreS7"
+            target="_blank"
+            >here</a
+          >
+        </p>
+      </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="infoModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          Can't find your Alpaca API key or secret?
+        </div>
+        <div class="modal-body">
+          Follow the steps below to get started:
+          <ol>
+            <li>Create an Alpaca trading account if you have not already</li>
+            <li>
+              Once in the Alpaca trading hub, see the top left to select between
+              Live trading or Paper Trading (Paper trading does not use real
+              money)
+            </li>
+            <li>
+              Scroll down until you see "API Keys" on the left and click
+              Regenerate
+            </li>
+            <li>Copy and paste your API key and secret into our interface!</li>
+          </ol>
+        </div>
+        <button class="modal-close" id="closeModalButton">Close</button>
       </div>
     </div>
   </body>
