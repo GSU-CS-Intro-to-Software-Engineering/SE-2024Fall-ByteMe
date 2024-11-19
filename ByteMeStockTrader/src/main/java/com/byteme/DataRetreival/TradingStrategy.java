@@ -1,65 +1,43 @@
-//MODIFY THIS LATER TO WORK OFF OF THE STORED SQL DATA
-
 package com.byteme.DataRetreival;
 
 import com.google.gson.JsonObject;
 
 public class TradingStrategy {
 
-    private static final double HIGH_THRESHOLD = 1.05;
-    private static final double LOW_THRESHOLD = 0.95;
-    private static final double MAX_POSITION_SIZE = 1000.0;
+    // Define thresholds for decision-making
+    private static final double RSI_OVERBOUGHT = 70.0;
+    private static final double RSI_OVERSOLD = 30.0;
+    private static final double SMA_THRESHOLD = 1.02; // SMA comparison multiplier
+    private static final double MACD_SIGNAL_DIFF = 0.0; // MACD line vs Signal line threshold
 
-    // Analyze stock data and return an action: Buy, Sell, or Hold
-    public String analyze(JsonObject numericalData) {
-        double latestClose = getLatestClosePrice(numericalData);
-        double movingAverage = calculateMovingAverage(numericalData, 5);
+    public String analyze(JsonObject smaData, JsonObject rsiData, JsonObject macdData) {
+        try {
+            // Extract values from the indicators
+            double currentSMA = extractIndicatorValue(smaData, "Technical Analysis: SMA", "SMA");
+            double currentRSI = extractIndicatorValue(rsiData, "Technical Analysis: RSI", "RSI");
+            double macdValue = extractIndicatorValue(macdData, "Technical Analysis: MACD", "MACD");
+            double signalValue = extractIndicatorValue(macdData, "Technical Analysis: MACD", "Signal");
 
-        if (latestClose > movingAverage * HIGH_THRESHOLD) {
-            return "Sell";
-        } else if (latestClose < movingAverage * LOW_THRESHOLD) {
-            return "Buy";
-        } else {
-            return "Hold";
+            // Decision-making based on indicators
+            if (currentRSI < RSI_OVERSOLD && macdValue > signalValue) {
+                return "Buy"; // RSI indicates oversold and MACD confirms upward trend
+            } else if (currentRSI > RSI_OVERBOUGHT || macdValue < signalValue) {
+                return "Sell"; // RSI indicates overbought or MACD confirms downward trend
+            } else if (currentSMA * SMA_THRESHOLD < macdValue) {
+                return "Hold"; // Prices are within a stable range relative to SMA
+            } else {
+                return "Hold"; // Default fallback
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "Hold"; // Return a conservative recommendation on error
         }
     }
 
-    // Calculate the position size based on volatility
-    public double calculatePositionSize(JsonObject numericalData) {
-        double volatility = calculateVolatility(numericalData);
-        double basePosition = MAX_POSITION_SIZE / volatility;
-        return Math.min(basePosition, MAX_POSITION_SIZE);
-    }
-
-    // Helper: Get the latest close price from the data
-    private double getLatestClosePrice(JsonObject numericalData) {
-        return numericalData.entrySet().stream()
-                .findFirst()
-                .map(entry -> entry.getValue().getAsJsonObject().get("4. close").getAsDouble())
-                .orElse(0.0);
-    }
-
-    // Helper: Calculate moving average for the given days
-    private double calculateMovingAverage(JsonObject numericalData, int days) {
-        return numericalData.entrySet().stream()
-                .limit(days)
-                .mapToDouble(entry -> entry.getValue().getAsJsonObject().get("4. close").getAsDouble())
-                .average()
-                .orElse(0.0);
-    }
-
-    // Helper: Calculate volatility based on high/low prices
-    private double calculateVolatility(JsonObject numericalData) {
-        double highestHigh = numericalData.entrySet().stream()
-                .mapToDouble(entry -> entry.getValue().getAsJsonObject().get("2. high").getAsDouble())
-                .max()
-                .orElse(0.0);
-
-        double lowestLow = numericalData.entrySet().stream()
-                .mapToDouble(entry -> entry.getValue().getAsJsonObject().get("3. low").getAsDouble())
-                .min()
-                .orElse(0.0);
-
-        return highestHigh - lowestLow;
+    // Helper to extract indicator values from JSON response
+    private double extractIndicatorValue(JsonObject json, String keyPath, String valueKey) {
+        JsonObject indicators = json.getAsJsonObject(keyPath);
+        String latestDate = indicators.keySet().iterator().next(); // Get the most recent date
+        return indicators.getAsJsonObject(latestDate).get(valueKey).getAsDouble();
     }
 }
