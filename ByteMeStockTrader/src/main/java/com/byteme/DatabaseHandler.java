@@ -5,6 +5,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.Map;
 import java.util.Properties;
 import java.io.InputStream;
 
@@ -42,11 +43,17 @@ public class DatabaseHandler {
                 "num_positive_articles INT, " +
                 "num_neutral_articles INT, " +
                 "num_negative_articles INT, " +
-                "avg_open DECIMAL(10, 2), " +
-                "avg_high DECIMAL(10, 2), " +
-                "avg_low DECIMAL(10, 2), " +
-                "avg_close DECIMAL(10, 2), " +
-                "avg_volume BIGINT" +
+                "sma DECIMAL(10, 2), " +
+                "ema DECIMAL(10, 2), " +
+                "rsi DECIMAL(10, 2), " +
+                "macd DECIMAL(10, 2), " +
+                "macd_signal DECIMAL(10, 2), " +
+                "macd_hist DECIMAL(10, 2), " +
+                "upper_band DECIMAL(10, 2), " +
+                "middle_band DECIMAL(10, 2), " +
+                "lower_band DECIMAL(10, 2), " +
+                "obv BIGINT, " +
+                "atr DECIMAL(10, 2)" +
                 ");";
 
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -59,31 +66,36 @@ public class DatabaseHandler {
 
     // Method to insert or update data in the specific stock's table
     public void insertOrUpdateData(Timestamp timestamp, String stockSymbol, int positiveCount, int neutralCount,
-            int negativeCount, double avgOpen, double avgHigh, double avgLow,
-            double avgClose, long avgVolume) {
+            int negativeCount, Map<String, Object> indicatorData) {
         createTableIfNotExists(stockSymbol); // Ensure the table exists
 
         String tableName = "stock_data_" + stockSymbol.toLowerCase();
-        String sql = "INSERT INTO " + tableName
-                + " (date, num_positive_articles, num_neutral_articles, num_negative_articles, " +
-                "avg_open, avg_high, avg_low, avg_close, avg_volume) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) " +
-                "ON DUPLICATE KEY UPDATE num_positive_articles=VALUES(num_positive_articles), " +
-                "num_neutral_articles=VALUES(num_neutral_articles), num_negative_articles=VALUES(num_negative_articles), "
-                +
-                "avg_open=VALUES(avg_open), avg_high=VALUES(avg_high), avg_low=VALUES(avg_low), " +
-                "avg_close=VALUES(avg_close), avg_volume=VALUES(avg_volume);";
+        StringBuilder columns = new StringBuilder(
+                "date, num_positive_articles, num_neutral_articles, num_negative_articles");
+        StringBuilder placeholders = new StringBuilder("?, ?, ?, ?");
+        StringBuilder updates = new StringBuilder(
+                "num_positive_articles=VALUES(num_positive_articles), num_neutral_articles=VALUES(num_neutral_articles), num_negative_articles=VALUES(num_negative_articles)");
+
+        for (String indicator : indicatorData.keySet()) {
+            columns.append(", ").append(indicator);
+            placeholders.append(", ?");
+            updates.append(", ").append(indicator).append("=VALUES(").append(indicator).append(")");
+        }
+
+        String sql = "INSERT INTO " + tableName + " (" + columns + ") VALUES (" + placeholders
+                + ") ON DUPLICATE KEY UPDATE "
+                + updates + ";";
 
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setTimestamp(1, timestamp);
             pstmt.setInt(2, positiveCount);
             pstmt.setInt(3, neutralCount);
             pstmt.setInt(4, negativeCount);
-            pstmt.setDouble(5, avgOpen);
-            pstmt.setDouble(6, avgHigh);
-            pstmt.setDouble(7, avgLow);
-            pstmt.setDouble(8, avgClose);
-            pstmt.setLong(9, avgVolume);
+
+            int index = 5;
+            for (Object value : indicatorData.values()) {
+                pstmt.setObject(index++, value);
+            }
 
             pstmt.executeUpdate();
             System.out.println("Data successfully inserted/updated in table '" + tableName + "'.");
@@ -92,7 +104,7 @@ public class DatabaseHandler {
         }
     }
 
-    // Close the database connection when done
+    // Close the database connection done
     public void closeConnection() {
         try {
             if (connection != null && !connection.isClosed()) {

@@ -2,6 +2,7 @@ package com.byteme;
 
 import com.byteme.DataRetreival.NumericalDataFetcher;
 import com.byteme.DataRetreival.StockNewsFetcher;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.springframework.stereotype.Service;
 
@@ -19,25 +20,33 @@ public class StockService {
 
     public Map<String, Object> gatherStockData(String symbol) {
         Map<String, Object> result = new HashMap<>();
-        int[] newsSentiment = gatherNewsSentiment(symbol);
-        int[] numericData = gatherNumericData(symbol);
+        int[] newsSentiment = { 4, 2, 1 }; // using mock values to save time gatherNewsSentiment(symbol);
+        Map<String, Object> indicatorData = gatherIndicatorData(symbol);
 
-        if (newsSentiment == null || numericData == null) {
+        if (newsSentiment == null || indicatorData == null) {
             result.put("error", "Failed to gather stock data.");
             return result;
         }
 
-        boolean uploadSuccess = uploadDataToDatabase(symbol, newsSentiment, numericData);
+        boolean uploadSuccess = uploadDataToDatabase(symbol, newsSentiment, indicatorData);
+
         result.put("uploadSuccess", uploadSuccess);
         result.put("symbol", symbol);
         result.put("positiveSentiment", newsSentiment[0]);
         result.put("neutralSentiment", newsSentiment[1]);
         result.put("negativeSentiment", newsSentiment[2]);
-        result.put("averageOpen", numericData[0]);
-        result.put("averageHigh", numericData[1]);
-        result.put("averageLow", numericData[2]);
-        result.put("averageClose", numericData[3]);
-        result.put("averageVolume", numericData[4]);
+
+        result.put("sma", indicatorData.get("sma"));
+        result.put("ema", indicatorData.get("ema"));
+        result.put("rsi", indicatorData.get("rsi"));
+        result.put("macd", indicatorData.get("macd"));
+        result.put("macd_signal", indicatorData.get("macd_signal"));
+        result.put("macd_hist", indicatorData.get("macd_hist"));
+        result.put("upper_band", indicatorData.get("upper_band"));
+        result.put("middle_band", indicatorData.get("middle_band"));
+        result.put("lower_band", indicatorData.get("lower_band"));
+        result.put("obv", indicatorData.get("obv"));
+        result.put("atr", indicatorData.get("atr"));
 
         return result;
     }
@@ -96,55 +105,54 @@ public class StockService {
         }
     }
 
-    public static int[] gatherNumericData(String symbol) {
+    public static Map<String, Object> gatherIndicatorData(String symbol) {
         try {
             NumericalDataFetcher dataFetcher = new NumericalDataFetcher(symbol);
-            System.out.println("-Fetching numerical data for " + symbol + " . . .");
-            JsonObject numericalData = dataFetcher.fetchData();
+            System.out.println("-Fetching current indicators for " + symbol + "...");
 
-            if (numericalData == null) {
-                System.out.println("Failed to fetch numeric data. Exiting...");
+            JsonObject indicatorJson = dataFetcher.fetchIndicators();
+
+            if (indicatorJson == null || indicatorJson.size() == 0) {
+                System.out.println("Failed to fetch indicators. Exiting...");
                 return null;
             }
 
-            // Convert values from JSON to int array
-            int[] numericValues = {
-                    (int) numericalData.get("averageOpen").getAsDouble(),
-                    (int) numericalData.get("averageHigh").getAsDouble(),
-                    (int) numericalData.get("averageLow").getAsDouble(),
-                    (int) numericalData.get("averageClose").getAsDouble(),
-                    numericalData.get("averageVolume").getAsInt()
-            };
+            // Convert the JsonObject into a Map<String, Object>
+            Map<String, Object> indicatorData = new HashMap<>();
+            for (Map.Entry<String, JsonElement> entry : indicatorJson.entrySet()) {
+                String key = entry.getKey().toLowerCase(); // Convert to match database column names
+                JsonObject value = entry.getValue().getAsJsonObject();
 
-            return numericValues;
+                // Map fields directly to their column names in the database
+                for (Map.Entry<String, JsonElement> field : value.entrySet()) {
+                    String fieldKey = field.getKey().toLowerCase(); // e.g., "ema", "macd", "upper_band"
+                    indicatorData.put(fieldKey, field.getValue().getAsString());
+                }
+            }
+
+            return indicatorData;
 
         } catch (Exception e) {
-            System.out.println("An error occurred: " + e.getMessage());
+            System.out.println("An error occurred while fetching indicators: " + e.getMessage());
             e.printStackTrace();
             return null;
         }
     }
 
-    public static boolean uploadDataToDatabase(String symbol, int[] newsSentiment, int[] numericData) {
-
+    public static boolean uploadDataToDatabase(String symbol, int[] newsSentiment, Map<String, Object> indicatorData) {
         try {
-            // Create an instance of DatabaseHandler to handle database operations
             DatabaseHandler dbHandler = new DatabaseHandler();
-
             Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis());
 
-            // Print the data to be inserted
             System.out.println("\nInserting data for " + symbol + " at " + currentTimestamp + "...");
             System.out.println("News sentiment: Positive - " + newsSentiment[0] + ", Neutral - " + newsSentiment[1]
                     + ", Negative - " + newsSentiment[2]);
-            System.out.println("Numeric data: Open - " + numericData[0] + ", High - " + numericData[1] + ", Low - "
-                    + numericData[2] + ", Close - " + numericData[3] + ", Volume - " + (long) numericData[4] + "\n");
+            System.out.println("Indicators: " + indicatorData);
 
             // Insert or update the data for the specific stock
             dbHandler.insertOrUpdateData(currentTimestamp, symbol, newsSentiment[0], newsSentiment[1], newsSentiment[2],
-                    numericData[0], numericData[1], numericData[2], numericData[3], (long) numericData[4]);
+                    indicatorData);
 
-            // Close the database connection
             dbHandler.closeConnection();
             return true;
 

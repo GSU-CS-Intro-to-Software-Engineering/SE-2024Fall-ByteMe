@@ -79,11 +79,17 @@
         <p>Positive Sentiment: ${data.positiveSentiment}</p>
         <p>Neutral Sentiment: ${data.neutralSentiment}</p>
         <p>Negative Sentiment: ${data.negativeSentiment}</p>
-        <p>Average Open: ${data.averageOpen}</p>
-        <p>Average High: ${data.averageHigh}</p>
-        <p>Average Low: ${data.averageLow}</p>
-        <p>Average Close: ${data.averageClose}</p>
-        <p>Average Volume: ${data.averageVolume}</p>
+        <p>SMA: ${data.sma || "N/A"}</p>
+        <p>EMA: ${data.ema || "N/A"}</p>
+        <p>RSI: ${data.rsi || "N/A"}</p>
+        <p>MACD: ${data.macd || "N/A"}</p>
+        <p>MACD Signal: ${data.macd_signal || "N/A"}</p>
+        <p>MACD Histogram: ${data.macd_hist || "N/A"}</p>
+        <p>Bollinger Bands (Upper): ${data.upper_band || "N/A"}</p>
+        <p>Bollinger Bands (Middle): ${data.middle_band || "N/A"}</p>
+        <p>Bollinger Bands (Lower): ${data.lower_band || "N/A"}</p>
+        <p>On Balance Volume (OBV): ${data.obv || "N/A"}</p>
+        <p>Average True Range (ATR): ${data.atr || "N/A"}</p>
       `;
 
         // Insert new data at the top

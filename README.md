@@ -10,8 +10,8 @@ Team Member 2: Atenea Caldera, ac34318@georgiasouthern.edu
 
 ## Prerequisites
 
-Python3 globally installed on your machine
-pip (Python package manager)
+-Python3 globally installed on your machine
+-pip (Python package manager)
 
 ## PROJECT SETUP
 
@@ -25,15 +25,17 @@ pip (Python package manager)
 
 5. Install sentiment analysis AI: 'pip install transformers torch'
 
-6. Make account on rapidapi.com
+6. Make account on rapidapi.com -> obtain YAHOO FINANCE API DATA api key
 
-7. Obtain YAHOO FINANCE API DATA api key
+7. If on mac: Enter terminal and load API key into '~/.zshrc' as 'YAHOO_FINANCE_API_KEY' and save using 'source ~/.zshrc' || If on windows, add API key to user env variables under 'YAHOO_FINANCE_API_KEY'
 
-8. If on mac: Enter terminal and load API key into '~/.zshrc' as 'YAHOO_FINANCE_API_KEY' and save using 'source ~/.zshrc' || If on mac, add API key to user env variables under 'YAHOO_FINANCE_API_KEY'
+8. Make account on twelvedata.com -> obtain API key
+
+9. If on mac: Enter terminal and load API key into '~/.zshrc' as 'TWELVE_DATA_API_KEY' and save using 'source ~/.zshrc' || If on windows, add API key to user env variables under 'TWELVE_DATA_API_KEY'
 
 ## RUNNING PROJECT
 
-1. Run Frontend connected with Backend: (1) cd into /ByteMeStockTrader (1.5) Run "mvn clean install (2) Run "mvn spring-boot:run" (3) Open localhost:8080 in browser
+1. Run Frontend connected with Backend: (1) cd into /ByteMeStockTrader (Run "mvn clean install again to be safe) (2) Run "mvn spring-boot:run" (3) Open localhost:8080 in browser
 
 ## ERRORS
 
