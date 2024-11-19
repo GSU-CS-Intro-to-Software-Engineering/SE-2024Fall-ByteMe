@@ -9,7 +9,7 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -131,22 +131,18 @@ public class StockService {
             // Create an instance of DatabaseHandler to handle database operations
             DatabaseHandler dbHandler = new DatabaseHandler();
 
-            // Initialize the table (if not already created)
-            dbHandler.initializeTable();
-
-            // Insert mock data to test the connection and insertion functionality
-            Date currentDate = new Date(System.currentTimeMillis());
+            Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis());
 
             // Print the data to be inserted
-            System.out.println("\nInserting data for " + symbol + " on " + currentDate + "...");
+            System.out.println("\nInserting data for " + symbol + " at " + currentTimestamp + "...");
             System.out.println("News sentiment: Positive - " + newsSentiment[0] + ", Neutral - " + newsSentiment[1]
                     + ", Negative - " + newsSentiment[2]);
             System.out.println("Numeric data: Open - " + numericData[0] + ", High - " + numericData[1] + ", Low - "
-                    + numericData[2] + ", Close - " + numericData[3] + ", Volume - " + numericData[4] + "\n");
+                    + numericData[2] + ", Close - " + numericData[3] + ", Volume - " + (long) numericData[4] + "\n");
 
-            // Insert or update the mock data
-            dbHandler.insertOrUpdateData(currentDate, symbol, newsSentiment[0], newsSentiment[1], newsSentiment[2],
-                    numericData[0], numericData[1], numericData[2], numericData[3], numericData[4]);
+            // Insert or update the data for the specific stock
+            dbHandler.insertOrUpdateData(currentTimestamp, symbol, newsSentiment[0], newsSentiment[1], newsSentiment[2],
+                    numericData[0], numericData[1], numericData[2], numericData[3], (long) numericData[4]);
 
             // Close the database connection
             dbHandler.closeConnection();
@@ -157,4 +153,5 @@ public class StockService {
             return false;
         }
     }
+
 }
