@@ -1,5 +1,7 @@
 import mysql.connector
 import requests
+import pickle
+import numpy as np
 
 # Explicitly define database configuration
 DB_CONFIG = {
@@ -13,9 +15,14 @@ DB_CONFIG = {
 # AlpacaController endpoint
 ALPACA_CONTROLLER_URL = "http://localhost:8080/api/execute-trade"
 
-def fetch_latest_data(symbol):
+# Load Pre-Trained Model
+MODEL_PATH = "Zekrom_model.json"
+with open(MODEL_PATH, "rb") as f:
+    model = pickle.load(f)
+
+def fetch_last_10_rows(symbol):
     """
-    Query the SQL database for the latest stock data.
+    Query the SQL database for the last 10 rows of stock data.
     """
     try:
         connection = mysql.connector.connect(**DB_CONFIG)
@@ -25,11 +32,11 @@ def fetch_latest_data(symbol):
         SELECT *
         FROM stock_data_{symbol.lower()}
         ORDER BY date DESC
-        LIMIT 1;
+        LIMIT 10;
         """
         cursor.execute(query)
-        result = cursor.fetchone()
-        return result
+        results = cursor.fetchall()
+        return results
     except mysql.connector.Error as e:
         print(f"Error fetching data for {symbol}: {e}")
     finally:
@@ -53,35 +60,62 @@ def execute_trade(action, quantity):
         print(f"Response Content: {response.text}")  # Print full response for debugging
 
         if response.status_code == 200:
-            # Safely parse JSON if available
-            try:
-                json_response = response.json()
-                print("Trade executed successfully:", json_response)
-            except ValueError:
-                print("Trade executed successfully, but response is not JSON:", response.text)
+            print("Trade executed successfully:", response.json())
         else:
             print(f"Failed to execute trade. HTTP {response.status_code}: {response.text}")
     except requests.RequestException as e:
         print(f"Error sending trade request to AlpacaController: {e}")
 
+def analyze_stock(data_rows):
+    """
+    Analyze stock data using a pre-trained AI model to decide whether to Buy, Sell, or Hold.
+    """
+    # Extract features from rows
+    features = []
+    for row in data_rows:
+        features.append([
+            float(row['sma']),
+            float(row['ema']),
+            float(row['rsi']),
+            float(row['macd']),
+            float(row['macd_signal']),
+            float(row['macd_hist']),
+            float(row['upper_band']),
+            float(row['middle_band']),
+            float(row['lower_band']),
+            float(row['obv']),
+            float(row['atr']),
+        ])
+
+    # Convert features into a NumPy array
+    features = np.array(features)
+
+    # Average the features (or apply other aggregation as needed)
+    avg_features = features.mean(axis=0).reshape(1, -1)
+
+    # Predict action using the pre-trained model
+    prediction = model.predict(avg_features)[0]  # 'Buy', 'Sell', 'Hold'
+    confidence = max(model.predict_proba(avg_features)[0])  # Confidence score
+    return prediction, confidence
+
 def main(symbol):
     """
     Main function to fetch stock data, analyze it, and execute trades based on logic.
     """
-    print(f"Analyzing stock: {symbol}...")
+    print(f"Fetching last 10 rows for stock: {symbol}...")
 
-    stock_data = fetch_latest_data(symbol)
-    if not stock_data:
+    last_10_data = fetch_last_10_rows(symbol)
+    if not last_10_data:
         print("No data available for the stock:", symbol)
         return
 
-    print("Latest Stock Data:", stock_data)
+    print("Last 10 Rows of Stock Data:")
+    for row in last_10_data:
+        print(row)
 
-    # Temporary logic to force a trade for testing purposes
-    label = "Buy"  # Force a "Buy" decision
-    confidence = 0.8  # Set a high confidence score for testing
-
-    print(f"Decision: {label} with confidence {confidence}")
+    # Analyze stock using the AI model
+    label, confidence = analyze_stock(last_10_data)
+    print(f"Model Decision: {label} with confidence {confidence:.2f}")
 
     if label == "Buy":
         quantity = max(int(confidence * 10), 1)  # Adjust quantity based on confidence
@@ -95,6 +129,5 @@ def main(symbol):
         print("Hold decision. No trade executed.")
 
 if __name__ == "__main__":
-    # Replace the below placeholder with the stock symbol you want to test
     symbol = "NVDA"
     main(symbol)

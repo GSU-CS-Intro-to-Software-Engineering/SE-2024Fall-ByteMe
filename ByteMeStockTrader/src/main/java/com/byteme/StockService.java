@@ -20,7 +20,7 @@ public class StockService {
 
     public Map<String, Object> gatherStockData(String symbol) {
         Map<String, Object> result = new HashMap<>();
-        int[] newsSentiment = { 4, 2, 1 }; // using mock values to save time gatherNewsSentiment(symbol);
+        int[] newsSentiment = gatherNewsSentiment(symbol);
         Map<String, Object> indicatorData = gatherIndicatorData(symbol);
 
         if (newsSentiment == null || indicatorData == null) {

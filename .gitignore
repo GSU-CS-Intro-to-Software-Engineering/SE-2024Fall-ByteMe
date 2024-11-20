@@ -1,31 +1,30 @@
 # Ignore Maven target directory
-/target/
+ByteMeStockTrader/target/
 
 # Ignore Python virtual environment directory
-/venv/
-/__pycache__/
+ByteMeStockTrader/venv/
+ByteMeStockTrader/__pycache__/
 
 # Ignore Python bytecode files
 *.pyc
 
 # Ignore IntelliJ IDEA / VS Code settings
-/.idea/
-/.vscode/
+ByteMeStockTrader/.idea/
+ByteMeStockTrader/.vscode/
 
 # Ignore macOS file
-.DS_Store
+ByteMeStockTrader/.DS_Store
 
 # Ignore logs
 *.log
 
 # Ignore other OS and IDE-related files
-/.gradle/
+ByteMeStockTrader/.gradle/
 /*.iml
-/.classpath
-/.project
+ByteMeStockTrader/.classpath
+ByteMeStockTrader/.project
 
 # Ignore the Maven POM file generated in build
 pom.properties
 
-# Ignore Daniel's ToDo List
-../goals.txt
+Model_Training/*
