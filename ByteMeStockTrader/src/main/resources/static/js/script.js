@@ -149,9 +149,31 @@ document.addEventListener("DOMContentLoaded", function () {
   );
 
   if (stockNextButton) {
-    stockNextButton.addEventListener("click", function () {
+    stockNextButton.addEventListener("click", async (event) => {
+      event.preventDefault();
+
       if (selectedStock) {
-        window.location.href = "/portfolio.html";
+        console.log("Selected Stock:", selectedStock);
+        //send actively traded stock to AlpacaController
+        try {
+          const response = await fetch("/api/update-stock", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ selectedStock }),
+          });
+  
+          if (response.ok) {
+            window.location.href = "/portfolio.html";
+          } else {
+            alert("Cannot update stock at this time. Please try again.");
+          }
+        } catch (error) {
+          console.error("Error updating stock with Alpaca:", error);
+          alert("An error occurred. Please try again.");
+        }
+        
       }
     });
   }

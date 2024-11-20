@@ -14,19 +14,21 @@ import java.util.Map;
 @RequestMapping("/api")
 public class AlpacaController {
 
+    private static String apiKey;
+    private static String apiSecret;
+    private static String tradingType;
+    private static String symbol;
+
     @PostMapping("/authenticate")
     public ResponseEntity<?> authenticate(@RequestBody Map<String, String> credentials) {
-        String apiKey = credentials.get("apiKey");
-        String apiSecret = credentials.get("apiSecret");
-        String tradingType = credentials.get("tradingType"); // Get tradingType from request
+        apiKey = credentials.get("apiKey");
+        apiSecret = credentials.get("apiSecret");
+        tradingType = credentials.get("tradingType");
 
-        // Determine the Alpaca API endpoint based on the trading type
-        String alpacaAccountUrl;
-        if ("cash".equalsIgnoreCase(tradingType)) {
-            alpacaAccountUrl = "https://api.alpaca.markets/v2/account"; // Live trading endpoint
-        } else {
-            alpacaAccountUrl = "https://paper-api.alpaca.markets/v2/account"; // Paper trading endpoint
-        }
+        // Validate credentials by calling the Alpaca API
+        String alpacaAccountUrl = tradingType.equalsIgnoreCase("cash")
+                ? "https://api.alpaca.markets/v2/account"
+                : "https://paper-api.alpaca.markets/v2/account";
 
         RestTemplate restTemplate = new RestTemplate();
         try {
@@ -39,32 +41,42 @@ public class AlpacaController {
                     String.class);
 
             if (response.getStatusCode() == HttpStatus.OK) {
-                return ResponseEntity.ok("Authenticated");
+                return ResponseEntity.ok("Authenticated successfully!");
             } else {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid API credentials");
             }
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid API credentials");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An error occurred during authentication.");
+        }
+    }
+
+    @PostMapping("/update-stock")
+    public ResponseEntity<?> updateStock(@RequestBody Map<String, String> stockMap) {
+        try {
+            System.out.println("Received payload: " + stockMap); // Debug log
+            symbol = stockMap.get("selectedStock"); // Retrieve selectedStock
+            System.out.println("Updated symbol: " + symbol); // Confirm it was updated
+            return ResponseEntity.ok("Stock symbol updated successfully.");
+        } catch (Exception e) {
+            e.printStackTrace(); // Log the full exception
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to update stock symbol.");
         }
     }
 
     @PostMapping("/execute-trade")
     public ResponseEntity<?> executeTrade(@RequestBody Map<String, Object> tradeDetails) {
-        String apiKey = (String) tradeDetails.get("apiKey");
-        String apiSecret = (String) tradeDetails.get("apiSecret");
-        String tradingType = (String) tradeDetails.get("tradingType");
-        String stockSymbol = (String) tradeDetails.get("stockSymbol");
+        if (apiKey == null || apiSecret == null || tradingType == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Not authenticated. Please log in.");
+        }
+
         String action = (String) tradeDetails.get("action"); // "buy" or "sell"
         int quantity = (int) tradeDetails.get("quantity");
 
-        // Determine the Alpaca trading endpoint based on the trading type
-        String alpacaOrdersUrl;
-        if ("cash".equalsIgnoreCase(tradingType)) {
-            alpacaOrdersUrl = "https://api.alpaca.markets/v2/orders"; // Live trading endpoint
-        } else {
-            alpacaOrdersUrl = "https://paper-api.alpaca.markets/v2/orders"; // Paper trading endpoint
-        }
+        String alpacaOrdersUrl = tradingType.equalsIgnoreCase("cash")
+                ? "https://api.alpaca.markets/v2/orders"
+                : "https://paper-api.alpaca.markets/v2/orders";
 
         RestTemplate restTemplate = new RestTemplate();
         try {
@@ -72,11 +84,10 @@ public class AlpacaController {
             headers.set("APCA-API-KEY-ID", apiKey);
             headers.set("APCA-API-SECRET-KEY", apiSecret);
 
-            // Create the trade order JSON body
             Map<String, Object> order = Map.of(
-                    "symbol", stockSymbol,
-                    "qty", quantity,
+                    "symbol", symbol,
                     "side", action,
+                    "qty", quantity,
                     "type", "market",
                     "time_in_force", "gtc");
 
@@ -93,7 +104,9 @@ public class AlpacaController {
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("An error occurred while executing the trade.");
+                    .body("An error occurred while executing the trade. quantity: " + quantity + " action: " + action
+                            + " symbol: " + symbol + " error: "
+                            + e.getMessage());
         }
     }
 }

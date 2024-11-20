@@ -62,8 +62,6 @@ public class StockService {
             ArrayList<String> titles = newsFetcher.fetchYahooFinanceApiTitles();
             System.out.println("-" + titles.size() + " articles fetched from Yahoo Finance API.\n");
 
-            // TODO: Add more sources here (News API, Alpha Vantage, etc.)
-
             // Build the command to execute Python script for sentiment analysis
             String workingDir = System.getProperty("user.dir");
             String[] sentimentCommand = { "python3", workingDir + "/src/python/sentiment.py" }; // "/ByteMeStockTrader/src/python/sentiment.py"
