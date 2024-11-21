@@ -8,6 +8,7 @@ import java.net.http.HttpResponse;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonArray;
 
 public class NumericalDataFetcher {
 
@@ -23,6 +24,15 @@ public class NumericalDataFetcher {
         String[] functions = { "sma", "ema", "rsi", "macd", "bbands", "obv", "atr" };
         JsonObject allIndicators = new JsonObject();
 
+        // Fetch Open/Close/High/Low/Volume
+        JsonObject openCloseHighLowVolumeData = fetchOpenCloseHighLowVolume();
+        if (openCloseHighLowVolumeData != null) {
+            allIndicators.add("OPEN_CLOSE_HIGH_LOW_VOLUME", openCloseHighLowVolumeData);
+        } else {
+            System.err.println("Error fetching Open/Close/High/Low/Volume.");
+        }
+
+        // Fetch Indicators
         for (String function : functions) {
             String url = buildUrl(function);
             JsonObject latestData = fetchLatestValue(url, function);
@@ -33,6 +43,59 @@ public class NumericalDataFetcher {
         }
 
         return allIndicators;
+    }
+
+    // Fetch Open, Prior Close, High, Low, and Volume
+    private JsonObject fetchOpenCloseHighLowVolume() throws Exception {
+        String url = "https://api.twelvedata.com/time_series" +
+                "?symbol=" + symbol +
+                "&interval=1day&outputsize=2&apikey=" + TWELVE_DATA_API_KEY;
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .header("Content-Type", "application/json")
+                .GET()
+                .build();
+
+        HttpResponse<String> response = HttpClient.newHttpClient()
+                .send(request, HttpResponse.BodyHandlers.ofString());
+
+        if (response.statusCode() != 200) {
+            System.err.println(
+                    "Error: Unable to fetch Open/Close/High/Low/Volume. Status Code: " + response.statusCode());
+            return null;
+        }
+
+        String responseBody = response.body();
+        System.out.println("Open/Close/High/Low/Volume Response: " + responseBody);
+
+        JsonObject jsonResponse = JsonParser.parseString(responseBody).getAsJsonObject();
+
+        if (jsonResponse.has("values")) {
+            JsonArray values = jsonResponse.get("values").getAsJsonArray();
+            JsonObject openCloseHighLowVolumeData = new JsonObject();
+
+            // Most recent day data
+            JsonObject mostRecentDay = values.get(0).getAsJsonObject();
+            openCloseHighLowVolumeData.addProperty("open", mostRecentDay.get("open").getAsString());
+            openCloseHighLowVolumeData.addProperty("high", mostRecentDay.get("high").getAsString());
+            openCloseHighLowVolumeData.addProperty("low", mostRecentDay.get("low").getAsString());
+            openCloseHighLowVolumeData.addProperty("close", mostRecentDay.get("close").getAsString());
+            openCloseHighLowVolumeData.addProperty("volume", mostRecentDay.get("volume").getAsString());
+
+            // Prior day's close
+            if (values.size() > 1) {
+                JsonObject priorDay = values.get(1).getAsJsonObject();
+                openCloseHighLowVolumeData.addProperty("previous_close", priorDay.get("close").getAsString());
+            } else {
+                openCloseHighLowVolumeData.addProperty("previous_close", "N/A");
+            }
+
+            return openCloseHighLowVolumeData;
+        }
+
+        System.err.println("Error: Missing values in time series response.");
+        return null;
     }
 
     // Build the API URL for each indicator
@@ -84,19 +147,16 @@ public class NumericalDataFetcher {
         }
 
         String responseBody = response.body();
-        System.out.println("Response for " + function + ": " + responseBody);
 
         JsonObject jsonResponse = JsonParser.parseString(responseBody).getAsJsonObject();
 
         if (jsonResponse.has("values")) {
             for (JsonElement entry : jsonResponse.get("values").getAsJsonArray()) {
                 JsonObject dataPoint = entry.getAsJsonObject();
-                // Return the first (most recent) data point
                 dataPoint.remove("datetime"); // Remove the datetime field
                 return dataPoint;
             }
         } else if (jsonResponse.has("value")) {
-            // Handle simpler cases like OBV, ATR, etc.
             JsonObject latestValue = new JsonObject();
             latestValue.addProperty("value", jsonResponse.get("value").getAsString());
             return latestValue;
@@ -105,5 +165,4 @@ public class NumericalDataFetcher {
         System.err.println("Error: Missing data for " + function);
         return null;
     }
-
 }

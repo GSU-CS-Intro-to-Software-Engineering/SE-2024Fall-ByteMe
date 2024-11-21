@@ -4,6 +4,8 @@ import com.byteme.DataRetreival.NumericalDataFetcher;
 import com.byteme.DataRetreival.StockNewsFetcher;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
@@ -11,6 +13,9 @@ import java.io.BufferedWriter;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -18,9 +23,39 @@ import java.util.Map;
 @Service
 public class StockService {
 
+    private final Map<LocalDate, int[]> dailyNewsSentimentCache = new HashMap<>(); // Cache news sentiment
+    private int uploadCounter = 0; // Track uploads since market open
+
+    @Scheduled(cron = "0 0/15 9-14 * * MON-FRI", zone = "America/New_York")
+    public void scheduleStockDataFetch() {
+        System.out.println("Scheduled task triggered at " + LocalTime.now());
+        if (isMarketOpen()) {
+            String symbol = "NVDA"; // Update this as needed
+            System.out.println("Fetching stock data for " + symbol);
+            Map<String, Object> result = gatherStockData(symbol);
+
+            // Increment upload counter
+            if (Boolean.TRUE.equals(result.get("uploadSuccess"))) {
+                uploadCounter++;
+                System.out.println("Upload Counter: " + uploadCounter);
+
+                if (uploadCounter >= 10) {
+                    analyzeAndTrade(symbol);
+                }
+            }
+        } else {
+            System.out.println("Market is closed. Skipping data fetch.");
+        }
+    }
+
+    private boolean isMarketOpen() {
+        LocalTime now = LocalTime.now(ZoneId.of("America/New_York"));
+        return !now.isBefore(LocalTime.of(9, 30)) && !now.isAfter(LocalTime.of(16, 0));
+    }
+
     public Map<String, Object> gatherStockData(String symbol) {
         Map<String, Object> result = new HashMap<>();
-        int[] newsSentiment = gatherNewsSentiment(symbol);
+        int[] newsSentiment = getNewsSentimentForDay(symbol);
         Map<String, Object> indicatorData = gatherIndicatorData(symbol);
 
         if (newsSentiment == null || indicatorData == null) {
@@ -30,12 +65,15 @@ public class StockService {
 
         boolean uploadSuccess = uploadDataToDatabase(symbol, newsSentiment, indicatorData);
 
+        // Populate the result
         result.put("uploadSuccess", uploadSuccess);
         result.put("symbol", symbol);
         result.put("positiveSentiment", newsSentiment[0]);
         result.put("neutralSentiment", newsSentiment[1]);
         result.put("negativeSentiment", newsSentiment[2]);
 
+        result.put("open_price", indicatorData.get("open_price"));
+        result.put("previous_close_price", indicatorData.get("previous_close_price"));
         result.put("sma", indicatorData.get("sma"));
         result.put("ema", indicatorData.get("ema"));
         result.put("rsi", indicatorData.get("rsi"));
@@ -49,6 +87,20 @@ public class StockService {
         result.put("atr", indicatorData.get("atr"));
 
         return result;
+    }
+
+    private int[] getNewsSentimentForDay(String symbol) {
+        LocalDate today = LocalDate.now(ZoneId.of("America/New_York"));
+        if (dailyNewsSentimentCache.containsKey(today)) {
+            // Return cached sentiment if already fetched
+            return new int[] { 0, 0, 0 };
+        } else {
+            int[] newsSentiment = gatherNewsSentiment(symbol);
+            if (newsSentiment != null) {
+                dailyNewsSentimentCache.put(today, newsSentiment); // Cache sentiment for the day
+            }
+            return newsSentiment;
+        }
     }
 
     public static int[] gatherNewsSentiment(String symbol) {
@@ -115,16 +167,28 @@ public class StockService {
                 return null;
             }
 
-            // Convert the JsonObject into a Map<String, Object>
             Map<String, Object> indicatorData = new HashMap<>();
-            for (Map.Entry<String, JsonElement> entry : indicatorJson.entrySet()) {
-                String key = entry.getKey().toLowerCase(); // Convert to match database column names
-                JsonObject value = entry.getValue().getAsJsonObject();
 
-                // Map fields directly to their column names in the database
+            // Handle Open, Close, High, Low, Volume, and Previous Close
+            if (indicatorJson.has("OPEN_CLOSE_HIGH_LOW_VOLUME")) {
+                JsonObject openCloseHighLowVolume = indicatorJson.getAsJsonObject("OPEN_CLOSE_HIGH_LOW_VOLUME");
+                indicatorData.put("open_price", openCloseHighLowVolume.get("open").getAsString());
+                indicatorData.put("previous_close_price", openCloseHighLowVolume.get("previous_close").getAsString());
+                indicatorData.put("high", openCloseHighLowVolume.get("high").getAsString());
+                indicatorData.put("low", openCloseHighLowVolume.get("low").getAsString());
+                indicatorData.put("volume", openCloseHighLowVolume.get("volume").getAsString());
+                indicatorData.put("close_price", openCloseHighLowVolume.get("close").getAsString());
+            }
+
+            // Handle other indicators
+            for (Map.Entry<String, JsonElement> entry : indicatorJson.entrySet()) {
+                String key = entry.getKey().toLowerCase();
+                if (key.equals("open_close_high_low_volume"))
+                    continue;
+
+                JsonObject value = entry.getValue().getAsJsonObject();
                 for (Map.Entry<String, JsonElement> field : value.entrySet()) {
-                    String fieldKey = field.getKey().toLowerCase(); // e.g., "ema", "macd", "upper_band"
-                    indicatorData.put(fieldKey, field.getValue().getAsString());
+                    indicatorData.put(field.getKey().toLowerCase(), field.getValue().getAsString());
                 }
             }
 
@@ -157,6 +221,39 @@ public class StockService {
         } catch (Exception e) {
             e.printStackTrace();
             return false;
+        }
+    }
+
+    private void analyzeAndTrade(String symbol) {
+        System.out.println("Analyzing data and making a trade decision for " + symbol + "...");
+
+        try {
+            // Build the command to execute Python script for sentiment analysis
+            String workingDir = System.getProperty("user.dir");
+            String[] tradeAnalyzerPath = { "python3", workingDir + "/src/python/analyzeAndTrade.py", symbol };
+
+            // Create a process to run the Python script
+            ProcessBuilder tradeAnalyzer = new ProcessBuilder(tradeAnalyzerPath);
+            Process process = tradeAnalyzer.start();
+
+            // Read the output of the Python script
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                System.out.println("[Python Script Output]: " + line); // Log the script output
+            }
+            reader.close();
+            int exitCode = process.waitFor();
+            if (exitCode == 0) {
+                System.out.println("Python script executed successfully.");
+                uploadCounter = 0;
+            } else {
+                System.err.println("Python script failed with exit code: " + exitCode);
+            }
+
+        } catch (Exception e) {
+            System.err.println("Error while running Python script: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 

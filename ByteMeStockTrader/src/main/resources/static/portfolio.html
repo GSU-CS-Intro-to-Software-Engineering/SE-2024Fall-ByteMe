@@ -76,7 +76,9 @@
         // Prepend the new fetched data to the top of feed content
         const newDataHtml = `
         <p>Symbol: ${data.symbol}</p>
-        <p>Positive Sentiment: ${data.positiveSentiment}</p>
+        <p>Open Price: ${data.open_price}</p>
+        <p>Previous Close Price: ${data.previous_close_price}</p>
+        <p>Negative Sentiment: ${data.negativeSentiment}</p>
         <p>Neutral Sentiment: ${data.neutralSentiment}</p>
         <p>Negative Sentiment: ${data.negativeSentiment}</p>
         <p>SMA: ${data.sma || "N/A"}</p>

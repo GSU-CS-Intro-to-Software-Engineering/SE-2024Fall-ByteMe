@@ -43,6 +43,12 @@ public class DatabaseHandler {
                 "num_positive_articles INT, " +
                 "num_neutral_articles INT, " +
                 "num_negative_articles INT, " +
+                "open_price DECIMAL(10, 2), " +
+                "previous_close_price DECIMAL(10, 2), " +
+                "high_price DECIMAL(10, 2), " +
+                "low_price DECIMAL(10, 2), " +
+                "close_price DECIMAL(10, 2), " +
+                "volume BIGINT, " +
                 "sma DECIMAL(10, 2), " +
                 "ema DECIMAL(10, 2), " +
                 "rsi DECIMAL(10, 2), " +
@@ -71,35 +77,79 @@ public class DatabaseHandler {
 
         String tableName = "stock_data_" + stockSymbol.toLowerCase();
         StringBuilder columns = new StringBuilder(
-                "date, num_positive_articles, num_neutral_articles, num_negative_articles");
-        StringBuilder placeholders = new StringBuilder("?, ?, ?, ?");
+                "date, num_positive_articles, num_neutral_articles, num_negative_articles, " +
+                        "open_price, previous_close_price, high_price, low_price, close_price, volume");
+        StringBuilder placeholders = new StringBuilder("?, ?, ?, ?, ?, ?, ?, ?, ?, ?");
         StringBuilder updates = new StringBuilder(
-                "num_positive_articles=VALUES(num_positive_articles), num_neutral_articles=VALUES(num_neutral_articles), num_negative_articles=VALUES(num_negative_articles)");
+                "num_positive_articles=VALUES(num_positive_articles), " +
+                        "num_neutral_articles=VALUES(num_neutral_articles), " +
+                        "num_negative_articles=VALUES(num_negative_articles), " +
+                        "open_price=VALUES(open_price), previous_close_price=VALUES(previous_close_price), " +
+                        "high_price=VALUES(high_price), low_price=VALUES(low_price), " +
+                        "close_price=VALUES(close_price), volume=VALUES(volume)");
 
-        for (String indicator : indicatorData.keySet()) {
-            columns.append(", ").append(indicator);
-            placeholders.append(", ?");
-            updates.append(", ").append(indicator).append("=VALUES(").append(indicator).append(")");
+        // Append other indicators to the SQL query, excluding explicitly handled ones
+        for (Map.Entry<String, Object> entry : indicatorData.entrySet()) {
+            String key = entry.getKey();
+
+            // Normalize keys to prevent duplicates
+            if (key.equals("high"))
+                key = "high_price";
+            if (key.equals("low"))
+                key = "low_price";
+            if (key.equals("close"))
+                key = "close_price";
+
+            // Skip keys that are already explicitly handled
+            if (!key.equals("open_price") && !key.equals("previous_close_price") &&
+                    !key.equals("high_price") && !key.equals("low_price") &&
+                    !key.equals("close_price") && !key.equals("volume")) {
+                columns.append(", ").append(key);
+                placeholders.append(", ?");
+                updates.append(", ").append(key).append("=VALUES(").append(key).append(")");
+            }
         }
 
         String sql = "INSERT INTO " + tableName + " (" + columns + ") VALUES (" + placeholders
-                + ") ON DUPLICATE KEY UPDATE "
-                + updates + ";";
+                + ") ON DUPLICATE KEY UPDATE " + updates + ";";
 
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            // Set explicit parameters
             pstmt.setTimestamp(1, timestamp);
             pstmt.setInt(2, positiveCount);
             pstmt.setInt(3, neutralCount);
             pstmt.setInt(4, negativeCount);
+            pstmt.setObject(5, indicatorData.get("open_price"));
+            pstmt.setObject(6, indicatorData.get("previous_close_price"));
+            pstmt.setObject(7, indicatorData.get("high"));
+            pstmt.setObject(8, indicatorData.get("low"));
+            pstmt.setObject(9, indicatorData.get("close_price"));
+            pstmt.setObject(10, indicatorData.get("volume"));
 
-            int index = 5;
-            for (Object value : indicatorData.values()) {
-                pstmt.setObject(index++, value);
+            // Set dynamic indicator values
+            int index = 11; // Start from the next index after explicit parameters
+            for (Map.Entry<String, Object> entry : indicatorData.entrySet()) {
+                String key = entry.getKey();
+
+                // Normalize keys and exclude explicitly handled ones
+                if (key.equals("high"))
+                    key = "high_price";
+                if (key.equals("low"))
+                    key = "low_price";
+                if (key.equals("close"))
+                    key = "close_price";
+
+                if (!key.equals("open_price") && !key.equals("previous_close_price") &&
+                        !key.equals("high_price") && !key.equals("low_price") &&
+                        !key.equals("close_price") && !key.equals("volume")) {
+                    pstmt.setObject(index++, entry.getValue());
+                }
             }
 
             pstmt.executeUpdate();
             System.out.println("Data successfully inserted/updated in table '" + tableName + "'.");
         } catch (SQLException e) {
+            System.out.println("BRUHHH '" + e.getMessage() + "'");
             e.printStackTrace();
         }
     }
