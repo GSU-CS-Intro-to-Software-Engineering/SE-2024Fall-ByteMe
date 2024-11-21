@@ -1,0 +1,30 @@
+-- Trade Automation Plan --
+
+1. Hourly Data Upload:
+Cron Job: fetch indicators, open/previous close price.
+Fetch article sentiments ONCE per day
+Insert data into the SQL table.
+Increment the counter after every upload.
+(User can use a slider to change upload time btw 1h/30min/15min)
+
+2. Analyze Data using Zekrom_Tuned.json on 10th Upload:
+Fetch the last 50 rows (or as many as available) from the SQL table.
+Feed this data to Zekrom
+Make a trade decision based on the model's prediction and confidence.
+
+3. Trade Execution:
+If the model predicts "Buy" or "Sell" with high confidence, send the trade signal to your AlpacaController.
+Log the trade decision, including:
+Model prediction and confidence.
+Data used for the decision.
+Actual trade executed (e.g., "Bought 10 shares of NVDA at $X").
+Reset the counter to 0
+
+Repeat:
+Continue the process every hour during market hours.
+
+Advantages of this Plan:
+Broad Pattern Recognition: The 50-row window ensures the model has enough data for accurate predictions.
+Balanced Trading: Decisions every 10 hours prevent overtrading while capturing meaningful trends.
+Flexibility: The fallback for insufficient rows ensures the system works even with limited data.
+This approach is efficient, aligns well with your model's training, and balances trading frequency with decision accuracy. You're on the right track! Let me know if you'd like help implementing the counter or integrating this workflow.
