@@ -26,6 +26,10 @@ public class StockService {
     private final Map<LocalDate, int[]> dailyNewsSentimentCache = new HashMap<>(); // Cache news sentiment
     private int uploadCounter = 0; // Track uploads since market open
 
+    public int getUploadCounter() {
+        return this.uploadCounter;
+    }
+
     @Scheduled(cron = "0 0/15 9-14 * * MON-FRI", zone = "America/New_York")
     public void scheduleStockDataFetch() {
         System.out.println("Scheduled task triggered at " + LocalTime.now());

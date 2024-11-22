@@ -8,44 +8,92 @@
     <script defer src="/js/script.js"></script>
   </head>
   <body>
+    <!-- Level 1: Banner -->
     <div class="banner">Byte Me Inc. 🤖</div>
+
     <div class="main-content">
       <div class="container">
+        <!-- Level 2: Header -->
         <div class="header">
-          <h1>Auto Trader Hub</h1>
+          <h1>Auto <span id="stockName">NVDA</span> Trader Hub</h1>
           <button id="tradingStatusButton" class="trading-button active">
             Actively Trading
           </button>
         </div>
-        <p>Viewing data for: <span id="selectedStock">NVDA</span></p>
 
-        <div class="stock-data">
-          <h2>Mock Data for <span id="stockSymbol">NVDA</span></h2>
-          <ul>
-            <li>Price: $150.00</li>
-            <li>Daily Change: +2.5%</li>
-            <li>Volume: 1.5M</li>
-            <li>Market Cap: $1.5T</li>
-          </ul>
-        </div>
+        <!-- Level 3: Slider and Upload Counter -->
+        <div class="level-3">
+          <!-- Slider -->
+          <div class="slider-container">
+            <label for="intervalSlider">Select Data Interval:</label>
+            <input
+              type="range"
+              id="intervalSlider"
+              name="intervalSlider"
+              min="1"
+              max="4"
+              value="1"
+              step="1"
+            />
+            <div class="slider-labels">
+              <span>1 hour</span>
+              <span>45 min</span>
+              <span>30 min</span>
+              <span>15 min</span>
+            </div>
+          </div>
 
-        <div class="feed">
-          <h3>Recent Activity</h3>
-          <div class="feed-content" id="feedContent">
-            <p>Update 1: Market fluctuations observed...</p>
-            <p>Update 2: Strong buy signal for NVDA...</p>
-            <p>Update 3: Stock volume hits new high...</p>
-            <p>Update 4: Analysis shows upward trend...</p>
-            <p>Update 5: Consider rebalancing portfolio...</p>
-            <p>Update 6: NVDA surpasses target...</p>
-            <p>Update 7: End-of-day summary...</p>
+          <!-- Upload Counter Number with Square Border -->
+          <div class="upload-counter-container">
+            <div class="upload-counter">0</div>
           </div>
         </div>
 
+        <!-- Level 4: Stock State and Portfolio State -->
+        <div class="level-4">
+          <!-- Left Square -->
+          <div class="square-box">
+            <p>Current state of <span id="stockName2">NVDA</span></p>
+          </div>
+
+          <!-- Right Square -->
+          <div class="square-box">
+            <p>Current state of the user's Alpaca trading portfolio</p>
+          </div>
+        </div>
+
+        <!-- Level 5: Feed and Buttons -->
+        <div class="feed">
+          <h3>Recent Activity</h3>
+          <div class="feed-content" id="feedContent">
+            <p>
+              Welcome to your very own automated
+              <span id="stockName2">NVDA</span> trader! 🚀
+            </p>
+            <p>
+              The slider in the top left indicates how frequent data is
+              retreived on your stock. ⏱️ 📊
+            </p>
+            <p>
+              Everytime data is retreived, the counter beside the slider is
+              incremented. 🧮
+            </p>
+            <p>
+              Once the counter reaches 10, your trader will analyze the data and
+              decide/make the wisest trading move based on it's training! 💰
+            </p>
+            <p>
+              Press the green button in the top right to pause operations at any
+              time. 🛑
+            </p>
+          </div>
+        </div>
         <div class="login-button-group">
+          <!--
           <button id="fetchDataButton" onclick="fetchStockData()">
             Fetch Data
           </button>
+          -->
           <button
             id="changeStockButton"
             onclick="window.location.href='/stock-selection.html'"
@@ -57,6 +105,14 @@
     </div>
 
     <script>
+      // Update stock names in header and other places
+      window.addEventListener("load", function () {
+        const selectedStock =
+          document.getElementById("selectedStock").textContent;
+        document.getElementById("stockName").textContent = selectedStock;
+        document.getElementById("stockName2").textContent = selectedStock;
+      });
+
       async function fetchStockData() {
         const selectedStock =
           document.getElementById("selectedStock").textContent;
@@ -78,25 +134,24 @@
         <p>Symbol: ${data.symbol}</p>
         <p>Open Price: ${data.open_price}</p>
         <p>Previous Close Price: ${data.previous_close_price}</p>
-        <p>Negative Sentiment: ${data.negativeSentiment}</p>
+        <p>Positive Sentiment: ${data.positiveSentiment}</p>
         <p>Neutral Sentiment: ${data.neutralSentiment}</p>
         <p>Negative Sentiment: ${data.negativeSentiment}</p>
-        <p>SMA: ${data.sma || "N/A"}</p>
-        <p>EMA: ${data.ema || "N/A"}</p>
-        <p>RSI: ${data.rsi || "N/A"}</p>
-        <p>MACD: ${data.macd || "N/A"}</p>
-        <p>MACD Signal: ${data.macd_signal || "N/A"}</p>
-        <p>MACD Histogram: ${data.macd_hist || "N/A"}</p>
-        <p>Bollinger Bands (Upper): ${data.upper_band || "N/A"}</p>
-        <p>Bollinger Bands (Middle): ${data.middle_band || "N/A"}</p>
-        <p>Bollinger Bands (Lower): ${data.lower_band || "N/A"}</p>
-        <p>On Balance Volume (OBV): ${data.obv || "N/A"}</p>
-        <p>Average True Range (ATR): ${data.atr || "N/A"}</p>
+        <!-- ... other data ... -->
       `;
 
         // Insert new data at the top
         feedContent.insertAdjacentHTML("afterbegin", newDataHtml);
       }
+
+      async function fetchUploadCounter() {
+        const response = await fetch("/api/uploadCounter");
+        const uploadCounter = await response.json();
+        document.getElementById("uploadCounter").textContent = uploadCounter;
+      }
+
+      // Fetch the upload counter when the page loads
+      window.addEventListener("load", fetchUploadCounter);
     </script>
   </body>
 </html>

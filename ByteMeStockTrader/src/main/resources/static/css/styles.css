@@ -123,6 +123,10 @@ p {
   max-height: 40px;
 }
 
+#changeStockButton {
+  margin-bottom: 10px;
+}
+
 
 .broker-button, .stock-button, .login-button, .trading-button {
   padding: 10px;
@@ -287,6 +291,7 @@ form {
 }
 
 /* Header with Toggle Button */
+/* Level 2: Header */
 .header {
   display: flex;
   justify-content: space-between;
@@ -294,28 +299,109 @@ form {
   margin-bottom: 20px;
 }
 
-.trading-button {
-  padding: 10px 20px;
-  font-size: 14px;
+.header h1 {
+  font-size: 28px;
+}
+
+/* Level 3: Slider and Upload Counter */
+.level-3 {
+  display: flex;
+  align-items: left;
+  justify-content: left; /* Center the content */
+  gap: 25px; /* Add spacing between elements */
+}
+
+/* Upload Counter Styling */
+.upload-counter-container {
+  text-align: center;
+  margin-right: 40px;
+}
+
+.upload-counter {
+  display: inline-block;
+  font-size: 48px;
   font-weight: bold;
+  color: #333;
+  border: 5px solid #333;
+  border-radius: 10px;
+  padding: 20px;
+  width: 100px;
+  height: 100px;
+  line-height: 60px;
+  background-color: #f9f9f9;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-/* Stock Data Styling */
-.stock-data {
-  margin-top: 20px;
+/* Slider Styling */
+/* Slider Styling */
+.slider-container {
+  flex-grow: 1;
+  max-width: 200px; /* Limit the maximum width */
+  margin-left: 20px; /* Add margin to space it from the upload counter */
 }
 
-.stock-data ul {
-  list-style-type: none;
-  padding: 0;
+.slider-container label {
+  font-size: 14px; /* Reduced font size */
+  margin-bottom: 5px;
+  display: block;
 }
 
-.stock-data li {
-  font-size: 18px;
+.slider-container input[type="range"] {
+  width: 100%;
   margin: 5px 0;
 }
 
-/* Scrollable Feed Styling */
+.slider-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px; /* Reduced font size */
+}
+
+.slider-labels span {
+  width: 25%; /* Ensure labels align under the slider ticks */
+  text-align: center;
+}
+
+
+.slider-container input[type="range"] {
+  width: 100%;
+  margin: 10px 0;
+}
+
+.slider-labels {
+  display: flex;
+  justify-content: space-between;
+}
+
+.slider-labels span {
+  font-size: 12px;
+}
+
+/* Level 4: Squares */
+.level-4 {
+  display: flex;
+  justify-content: space-between;
+  margin: 40px 0;
+}
+
+.square-box {
+  width: 48%;
+  height: 200px;
+  border: 2px solid #333;
+  border-radius: 10px;
+  background-color: #f9f9f9;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.square-box p {
+  font-size: 18px;
+  padding: 20px;
+}
+
+/* Level 5: Feed */
 .feed {
   margin-top: 30px;
   padding: 10px;
@@ -342,6 +428,36 @@ form {
   font-size: 14px;
   margin: 8px 0;
 }
+
+.trading-button {
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+/* Upload Counter Styling */
+.upload-counter-container {
+  text-align: center;
+  margin-right: 20px; /* Adjusted margin */
+}
+
+.upload-counter {
+  display: inline-block;
+  font-size: 20px; /* Reduced font size */
+  font-weight: bold;
+  color: #333;
+  border: 2px solid #333; /* Reduced border width */
+  border-radius: 10px;
+  padding: 10px; /* Reduced padding */
+  width: 20px; /* Reduced width */
+  height: 20px; /* Reduced height */
+  line-height: 20px; /* Adjusted line-height */
+  background-color: #f9f9f9;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Reduced shadow */
+}
+
+
+
 
 /* Carousel Styling */
 .carousel-container {
