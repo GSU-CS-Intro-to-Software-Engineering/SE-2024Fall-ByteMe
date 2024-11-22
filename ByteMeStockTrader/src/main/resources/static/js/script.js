@@ -193,24 +193,6 @@ document.addEventListener("DOMContentLoaded", function () {
     stockSymbolElement.textContent = stock;
   }
 
-  // Toggle Trading Status Button
-  const tradingStatusButton = document.getElementById("tradingStatusButton");
-  if (tradingStatusButton) {
-    tradingStatusButton.addEventListener("click", function () {
-      if (tradingStatusButton.classList.contains("active")) {
-        tradingStatusButton.classList.remove("active");
-        tradingStatusButton.classList.add("inactive");
-        tradingStatusButton.textContent = "Deactivated";
-        tradingStatusButton.style.backgroundColor = "#dc3545";
-      } else {
-        tradingStatusButton.classList.remove("inactive");
-        tradingStatusButton.classList.add("active");
-        tradingStatusButton.textContent = "Actively Trading";
-        tradingStatusButton.style.backgroundColor = "#28a745";
-      }
-    });
-  }
-
   // Carousel Logic
   const carousel = document.querySelector(".carousel");
   const quoteBoxes = document.querySelectorAll(".quote-box");

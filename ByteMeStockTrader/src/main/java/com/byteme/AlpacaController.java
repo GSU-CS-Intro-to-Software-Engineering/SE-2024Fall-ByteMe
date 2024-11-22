@@ -52,6 +52,15 @@ public class AlpacaController {
         }
     }
 
+    @GetMapping("/current-symbol")
+    public ResponseEntity<String> getCurrentSymbol() {
+        if (symbol != null && !symbol.isEmpty()) {
+            return ResponseEntity.ok(symbol);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No symbol set.");
+        }
+    }
+
     @PostMapping("/update-stock")
     public ResponseEntity<?> updateStock(@RequestBody Map<String, String> stockMap) {
         try {
@@ -109,4 +118,50 @@ public class AlpacaController {
                             + e.getMessage());
         }
     }
+
+    @GetMapping("/portfolio")
+    public ResponseEntity<?> getPortfolioData() {
+        if (apiKey == null || apiSecret == null || tradingType == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Not authenticated. Please log in.");
+        }
+
+        String alpacaAccountUrl = tradingType.equalsIgnoreCase("cash")
+                ? "https://api.alpaca.markets/v2/account"
+                : "https://paper-api.alpaca.markets/v2/account";
+
+        String alpacaPositionsUrl = tradingType.equalsIgnoreCase("cash")
+                ? "https://api.alpaca.markets/v2/positions"
+                : "https://paper-api.alpaca.markets/v2/positions";
+
+        RestTemplate restTemplate = new RestTemplate();
+        try {
+            // Fetch account balance
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("APCA-API-KEY-ID", apiKey);
+            headers.set("APCA-API-SECRET-KEY", apiSecret);
+
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+
+            ResponseEntity<Map> accountResponse = restTemplate.exchange(alpacaAccountUrl, HttpMethod.GET, entity,
+                    Map.class);
+            ResponseEntity<Map[]> positionsResponse = restTemplate.exchange(alpacaPositionsUrl, HttpMethod.GET, entity,
+                    Map[].class);
+
+            if (accountResponse.getStatusCode() == HttpStatus.OK
+                    && positionsResponse.getStatusCode() == HttpStatus.OK) {
+                Map<String, Object> portfolioData = Map.of(
+                        "account", accountResponse.getBody(),
+                        "positions", positionsResponse.getBody());
+                return ResponseEntity.ok(portfolioData);
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("Failed to fetch portfolio data.");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An error occurred while fetching portfolio data: " + e.getMessage());
+        }
+    }
+
 }

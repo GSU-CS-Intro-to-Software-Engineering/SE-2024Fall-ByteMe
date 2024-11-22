@@ -25,16 +25,26 @@ public class StockService {
 
     private final Map<LocalDate, int[]> dailyNewsSentimentCache = new HashMap<>(); // Cache news sentiment
     private int uploadCounter = 0; // Track uploads since market open
+    private boolean isTradingEnabled = true;
 
     public int getUploadCounter() {
         return this.uploadCounter;
     }
 
-    @Scheduled(cron = "0 0/15 9-14 * * MON-FRI", zone = "America/New_York")
+    public void toggleTrader() {
+        isTradingEnabled = !isTradingEnabled;
+        System.out.println("Trading status updated: " + (isTradingEnabled ? "Enabled" : "Disabled"));
+    }
+
+    public boolean isTradingEnabled() {
+        return isTradingEnabled;
+    }
+
+    @Scheduled(cron = "0 0/1 9-20 * * MON-FRI", zone = "America/New_York")
     public void scheduleStockDataFetch() {
         System.out.println("Scheduled task triggered at " + LocalTime.now());
-        if (isMarketOpen()) {
-            String symbol = "NVDA"; // Update this as needed
+        if (isTradingEnabled && isMarketOpen()) {
+            String symbol = "NVDA";
             System.out.println("Fetching stock data for " + symbol);
             Map<String, Object> result = gatherStockData(symbol);
 
@@ -48,7 +58,7 @@ public class StockService {
                 }
             }
         } else {
-            System.out.println("Market is closed. Skipping data fetch.");
+            System.out.println("Market is closed or trading is disabled. Skipping data fetch.");
         }
     }
 
@@ -59,7 +69,7 @@ public class StockService {
 
     public Map<String, Object> gatherStockData(String symbol) {
         Map<String, Object> result = new HashMap<>();
-        int[] newsSentiment = getNewsSentimentForDay(symbol);
+        int[] newsSentiment = { 0, 0, 0 };// getNewsSentimentForDay(symbol);
         Map<String, Object> indicatorData = gatherIndicatorData(symbol);
 
         if (newsSentiment == null || indicatorData == null) {

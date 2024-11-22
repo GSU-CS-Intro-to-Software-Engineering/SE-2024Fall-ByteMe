@@ -3,12 +3,14 @@ package com.byteme;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
 @RestController
+@RequestMapping("/sc")
 public class StockController {
 
     private final StockService stockService;
@@ -28,6 +30,14 @@ public class StockController {
     public ResponseEntity<Integer> getUploadCounter() {
         int uploadCounter = stockService.getUploadCounter();
         return ResponseEntity.ok(uploadCounter);
+    }
+
+    @GetMapping("/toggleTrader")
+    public ResponseEntity<String> toggleTrader() {
+        stockService.toggleTrader();
+        String status = stockService.isTradingEnabled() ? "Trading Enabled" : "Trading Disabled";
+        System.out.println("Toggle endpoint hit. New status: " + status); // Debug print
+        return ResponseEntity.ok(status);
     }
 
 }

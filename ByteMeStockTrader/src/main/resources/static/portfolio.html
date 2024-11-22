@@ -6,13 +6,14 @@
     <title>Portfolio Hub</title>
     <link rel="stylesheet" href="/css/styles.css" />
     <script defer src="/js/script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
   <body>
     <!-- Level 1: Banner -->
     <div class="banner">Byte Me Inc. 🤖</div>
 
     <div class="main-content">
-      <div class="container">
+      <div class="portfolio-container">
         <!-- Level 2: Header -->
         <div class="header">
           <h1>Auto <span id="stockName">NVDA</span> Trader Hub</h1>
@@ -25,7 +26,7 @@
         <div class="level-3">
           <!-- Slider -->
           <div class="slider-container">
-            <label for="intervalSlider">Select Data Interval:</label>
+            <p><strong>Select Data Interval:</strong></p>
             <input
               type="range"
               id="intervalSlider"
@@ -36,10 +37,10 @@
               step="1"
             />
             <div class="slider-labels">
-              <span>1 hour</span>
-              <span>45 min</span>
-              <span>30 min</span>
-              <span>15 min</span>
+              <span>10 min.</span>
+              <span>30 min.</span>
+              <span>1 hr.</span>
+              <span>2 hr.</span>
             </div>
           </div>
 
@@ -57,8 +58,16 @@
           </div>
 
           <!-- Right Square -->
-          <div class="square-box">
-            <p>Current state of the user's Alpaca trading portfolio</p>
+          <div class="square-box" id="portfolioBox">
+            <p id="portfolioLoading"></p>
+            <div class="spinner" id="portfolioSpinner"></div>
+            <div id="portfolioText"></div>
+            <canvas
+              id="portfolioChart"
+              width="400"
+              height="300"
+              style="display: none"
+            ></canvas>
           </div>
         </div>
 
@@ -152,6 +161,125 @@
 
       // Fetch the upload counter when the page loads
       window.addEventListener("load", fetchUploadCounter);
+
+      async function fetchPortfolioData() {
+        const response = await fetch("/api/portfolio");
+        const portfolioBox = document.getElementById("portfolioBox");
+        const loadingText = document.getElementById("portfolioLoading");
+        const spinner = document.getElementById("portfolioSpinner");
+        const chartCanvas = document.getElementById("portfolioChart");
+
+        if (response.ok) {
+          const portfolioData = await response.json();
+
+          const account = portfolioData.account;
+          const positions = portfolioData.positions;
+
+          const cash = parseFloat(account.cash).toFixed(2);
+          const portfolioValue = parseFloat(account.portfolio_value).toFixed(2);
+
+          spinner.style.display = "none";
+
+          const selectedStockData = positions.find(
+            (pos) => pos.symbol === "NVDA"
+          );
+          const shares = selectedStockData ? selectedStockData.qty : 0;
+
+          portfolioBox.innerHTML = `
+        <p>Portfolio Value: $${portfolioValue}</p>
+        <p>Cash to Trade: $${cash}</p>
+        <p>Shares NVDA: ${shares}</p>
+        <canvas id="portfolioChart" width="400" height="300"></canvas>
+      `;
+
+          const ctx = document
+            .getElementById("portfolioChart")
+            .getContext("2d");
+          const labels = positions.map((pos) => pos.symbol);
+          const values = positions.map((pos) => parseFloat(pos.market_value));
+
+          new Chart(ctx, {
+            type: "doughnut",
+            data: {
+              labels: labels,
+              datasets: [
+                {
+                  data: values,
+                  backgroundColor: [
+                    "#FF6384",
+                    "#36A2EB",
+                    "#FFCE56",
+                    "#4BC0C0",
+                    "#9966FF",
+                  ],
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              plugins: {
+                legend: {
+                  position: "top",
+                },
+                tooltip: {
+                  callbacks: {
+                    label: function (tooltipItem) {
+                      const value = tooltipItem.raw / 100; // Adjust the value
+                      return `${tooltipItem.label}: ${value.toFixed(2)}%`;
+                    },
+                  },
+                },
+              },
+            },
+          });
+
+          portfolioBox.classList.add("loaded"); // Trigger transition to final content
+        } else {
+          console.error("Failed to fetch portfolio data:", response.status);
+          loadingText.textContent = "Error loading portfolio data.";
+        }
+      }
+
+      window.addEventListener("load", fetchPortfolioData);
+
+      document
+        .getElementById("tradingStatusButton")
+        .addEventListener("click", async function () {
+          const tradingStatusButton = document.getElementById(
+            "tradingStatusButton"
+          );
+
+          // Update UI styles
+          if (tradingStatusButton.classList.contains("active")) {
+            tradingStatusButton.classList.remove("active");
+            tradingStatusButton.classList.add("inactive");
+            tradingStatusButton.textContent = "Deactivated";
+            tradingStatusButton.style.backgroundColor = "#dc3545";
+          } else {
+            tradingStatusButton.classList.remove("inactive");
+            tradingStatusButton.classList.add("active");
+            tradingStatusButton.textContent = "Actively Trading";
+            tradingStatusButton.style.backgroundColor = "#28a745";
+          }
+
+          // Send a signal to the backend to toggle the trading status
+          try {
+            const response = await fetch("/sc/toggleTrader", {
+              method: "GET",
+            });
+
+            if (!response.ok) {
+              console.error(
+                "Failed to toggle trading status:",
+                response.status
+              );
+            } else {
+              console.log("Trading status toggled successfully.");
+            }
+          } catch (error) {
+            console.error("Error toggling trading status:", error);
+          }
+        });
     </script>
   </body>
 </html>
