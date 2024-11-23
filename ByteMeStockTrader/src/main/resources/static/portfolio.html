@@ -52,9 +52,23 @@
 
         <!-- Level 4: Stock State and Portfolio State -->
         <div class="level-4">
-          <!-- Left Square -->
-          <div class="square-box">
-            <p>Current state of <span id="stockName2">NVDA</span></p>
+          <div class="square-box sentiment-visualizer">
+            <div class="visualizer-container">
+              <div class="gradient-box">
+                <p class="sentiment-title">Current News Sentiment</p>
+                <canvas
+                  id="sentimentVisualizer"
+                  width="300"
+                  height="75"
+                ></canvas>
+              </div>
+              <div class="bar-chart-container">
+                <p class="bar-chart-title" style="margin-bottom: 1px">
+                  Key Metrics
+                </p>
+                <canvas id="metricsBarChart" width="200" height="150"></canvas>
+              </div>
+            </div>
           </div>
 
           <!-- Right Square -->
@@ -280,6 +294,131 @@
             console.error("Error toggling trading status:", error);
           }
         });
+
+      window.addEventListener("load", function () {
+        // ** News Sentiment Gradient Rectangle **
+        const sentimentCanvas = document.getElementById("sentimentVisualizer");
+        const sentimentCtx = sentimentCanvas.getContext("2d");
+
+        const sentimentData = {
+          positive: 5,
+          neutral: 1,
+          negative: 2,
+        };
+
+        const total =
+          sentimentData.positive +
+          sentimentData.neutral +
+          sentimentData.negative;
+        const positivePercentage = sentimentData.positive / total;
+        const neutralPercentage = sentimentData.neutral / total;
+        const negativePercentage = sentimentData.negative / total;
+
+        const sentimentWidth = sentimentCanvas.width;
+        const sentimentHeight = sentimentCanvas.height;
+        const positiveWidth = sentimentWidth * positivePercentage;
+        const neutralWidth = sentimentWidth * neutralPercentage;
+        const negativeWidth = sentimentWidth * negativePercentage;
+
+        const positiveColor = "#56D798";
+        const neutralColor = "#FFD97D";
+        const negativeColor = "#FF6B6B";
+
+        const positiveNeutralGradient = sentimentCtx.createLinearGradient(
+          0,
+          0,
+          positiveWidth + neutralWidth,
+          0
+        );
+        positiveNeutralGradient.addColorStop(0, positiveColor);
+        positiveNeutralGradient.addColorStop(1, neutralColor);
+
+        const neutralNegativeGradient = sentimentCtx.createLinearGradient(
+          positiveWidth,
+          0,
+          sentimentWidth,
+          0
+        );
+        neutralNegativeGradient.addColorStop(0, neutralColor);
+        neutralNegativeGradient.addColorStop(1, negativeColor);
+
+        sentimentCtx.fillStyle = positiveColor;
+        sentimentCtx.fillRect(0, 0, positiveWidth, sentimentHeight);
+
+        sentimentCtx.fillStyle = positiveNeutralGradient;
+        sentimentCtx.fillRect(positiveWidth, 0, neutralWidth, sentimentHeight);
+
+        sentimentCtx.fillStyle = neutralNegativeGradient;
+        sentimentCtx.fillRect(
+          positiveWidth + neutralWidth,
+          0,
+          negativeWidth,
+          sentimentHeight
+        );
+
+        // ** Bar Chart for Key Metrics **
+        const metricsCanvas = document.getElementById("metricsBarChart");
+        const metricsCtx = metricsCanvas.getContext("2d");
+
+        const metricValues = {
+          Open: 147.3,
+          High: 147.38,
+          SMA: 144.81,
+          RSI: 56.11,
+          EMA: 144.47,
+        };
+
+        new Chart(metricsCtx, {
+          type: "bar",
+          data: {
+            labels: Object.keys(metricValues),
+            datasets: [
+              {
+                label: "Value",
+                data: Object.values(metricValues),
+                backgroundColor: [
+                  "#ADD8E6", // Light Blue
+                  "#87CEEB", // Sky Blue
+                  "#4682B4", // Steel Blue
+                  "#6495ED", // Cornflower Blue
+                  "#1E90FF", // Dodger Blue
+                ],
+                borderRadius: 12, // Rounded corners
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: {
+                display: false,
+              },
+            },
+            scales: {
+              x: {
+                ticks: {
+                  font: {
+                    size: 14,
+                    weight: "bold",
+                  },
+                },
+              },
+              y: {
+                beginAtZero: true,
+                grid: {
+                  display: false,
+                },
+                ticks: {
+                  font: {
+                    size: 14,
+                    weight: "bold",
+                  },
+                },
+              },
+            },
+          },
+        });
+      });
     </script>
   </body>
 </html>
