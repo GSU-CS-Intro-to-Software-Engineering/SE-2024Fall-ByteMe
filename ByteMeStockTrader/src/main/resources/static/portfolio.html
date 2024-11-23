@@ -6,46 +6,117 @@
     <title>Portfolio Hub</title>
     <link rel="stylesheet" href="/css/styles.css" />
     <script defer src="/js/script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
   <body>
+    <!-- Level 1: Banner -->
     <div class="banner">Byte Me Inc. 🤖</div>
+
     <div class="main-content">
-      <div class="container">
+      <div class="portfolio-container">
+        <!-- Level 2: Header -->
         <div class="header">
-          <h1>Auto Trader Hub</h1>
+          <h1>Auto <span id="selectedStock1">NVDA</span> Trader Hub</h1>
           <button id="tradingStatusButton" class="trading-button active">
             Actively Trading
           </button>
         </div>
-        <p>Viewing data for: <span id="selectedStock">NVDA</span></p>
 
-        <div class="stock-data">
-          <h2>Mock Data for <span id="stockSymbol">NVDA</span></h2>
-          <ul>
-            <li>Price: $150.00</li>
-            <li>Daily Change: +2.5%</li>
-            <li>Volume: 1.5M</li>
-            <li>Market Cap: $1.5T</li>
-          </ul>
-        </div>
+        <!-- Level 3: Slider and Upload Counter -->
+        <div class="level-3">
+          <!-- Slider -->
+          <div class="slider-container">
+            <p><strong>Select Data Interval:</strong></p>
+            <input
+              type="range"
+              id="intervalSlider"
+              name="intervalSlider"
+              min="1"
+              max="4"
+              value="1"
+              step="1"
+            />
+            <div class="slider-labels">
+              <span>10 min.</span>
+              <span>30 min.</span>
+              <span>1 hr.</span>
+              <span>2 hr.</span>
+            </div>
+          </div>
 
-        <div class="feed">
-          <h3>Recent Activity</h3>
-          <div class="feed-content" id="feedContent">
-            <p>Update 1: Market fluctuations observed...</p>
-            <p>Update 2: Strong buy signal for NVDA...</p>
-            <p>Update 3: Stock volume hits new high...</p>
-            <p>Update 4: Analysis shows upward trend...</p>
-            <p>Update 5: Consider rebalancing portfolio...</p>
-            <p>Update 6: NVDA surpasses target...</p>
-            <p>Update 7: End-of-day summary...</p>
+          <!-- Upload Counter Number with Square Border -->
+          <div class="upload-counter-container">
+            <div class="upload-counter" id="uploadCounter">0</div>
           </div>
         </div>
 
+        <!-- Level 4: Stock State and Portfolio State -->
+        <div class="level-4">
+          <div class="square-box sentiment-visualizer">
+            <div class="visualizer-container">
+              <div class="gradient-box">
+                <p class="sentiment-title">Current News Sentiment</p>
+                <canvas
+                  id="sentimentVisualizer"
+                  width="300"
+                  height="75"
+                ></canvas>
+              </div>
+              <div class="bar-chart-container">
+                <p class="bar-chart-title" style="margin-bottom: 1px">
+                  Key Metrics
+                </p>
+                <canvas id="metricsBarChart" width="200" height="150"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Square -->
+          <div class="square-box" id="portfolioBox">
+            <p id="portfolioLoading"></p>
+            <div class="spinner" id="portfolioSpinner"></div>
+            <div id="portfolioText"></div>
+            <canvas
+              id="portfolioChart"
+              width="400"
+              height="300"
+              style="display: none"
+            ></canvas>
+          </div>
+        </div>
+
+        <!-- Level 5: Feed and Buttons -->
+        <div class="feed">
+          <h3>Recent Activity</h3>
+          <div class="feed-content" id="feedContent">
+            <p>
+              Welcome to your very own automated
+              <span id="selectedStock2">NVDA</span> trader! 🚀
+            </p>
+            <p>
+              The slider in the top left indicates how frequent data is
+              retreived on your stock. ⏱️ 📊
+            </p>
+            <p>
+              Everytime data is retreived, the counter beside the slider is
+              incremented. 🧮
+            </p>
+            <p>
+              Once the counter reaches 10, your trader will analyze the data and
+              decide/make the wisest trading move based on it's training! 💰
+            </p>
+            <p>
+              Press the green button in the top right to pause operations at any
+              time. 🛑
+            </p>
+          </div>
+        </div>
         <div class="login-button-group">
+          <!--
           <button id="fetchDataButton" onclick="fetchStockData()">
             Fetch Data
           </button>
+          -->
           <button
             id="changeStockButton"
             onclick="window.location.href='/stock-selection.html'"
@@ -57,45 +128,386 @@
     </div>
 
     <script>
-      async function fetchStockData() {
-        const selectedStock =
-          document.getElementById("selectedStock").textContent;
+      let symbol = "NVDA";
 
-        // Fetch data from backend
-        const response = await fetch(`/api/trade?symbol=${selectedStock}`);
+      let pos_news = 5;
+      let neu_news = 1;
+      let neg_news = 2;
+
+      let OPEN = 142;
+      let HIGH = 145;
+      let SMA = 143;
+      let RSI = 44;
+      let VOL = 230;
+
+      let metricsChartInstance = null;
+
+      async function fetchData() {
+        const response = await fetch("/sc/fetchPortfolioData");
         const data = await response.json();
 
-        // Reference to feed content
-        const feedContent = document.getElementById("feedContent");
+        // Update stock symbol and upload counter
+        symbol = data.symbol;
+        document.getElementById("uploadCounter").textContent =
+          data.uploadCounter;
+        document.getElementById("selectedStock1").textContent = data.symbol;
+        document.getElementById("selectedStock2").textContent = data.symbol;
 
-        if (data.error) {
-          feedContent.insertAdjacentHTML("afterbegin", `<p>${data.error}</p>`);
-          return;
+        if (data.positiveSentiment != null && data.positiveSentiment != 0) {
+          pos_news = data.positiveSentiment;
+          neutralSentiment = data.neutralSentiment;
+          neg_news = data.negativeSentiment;
         }
 
-        // Prepend the new fetched data to the top of feed content
-        const newDataHtml = `
-        <p>Symbol: ${data.symbol}</p>
-        <p>Open Price: ${data.open_price}</p>
-        <p>Previous Close Price: ${data.previous_close_price}</p>
-        <p>Negative Sentiment: ${data.negativeSentiment}</p>
-        <p>Neutral Sentiment: ${data.neutralSentiment}</p>
-        <p>Negative Sentiment: ${data.negativeSentiment}</p>
-        <p>SMA: ${data.sma || "N/A"}</p>
-        <p>EMA: ${data.ema || "N/A"}</p>
-        <p>RSI: ${data.rsi || "N/A"}</p>
-        <p>MACD: ${data.macd || "N/A"}</p>
-        <p>MACD Signal: ${data.macd_signal || "N/A"}</p>
-        <p>MACD Histogram: ${data.macd_hist || "N/A"}</p>
-        <p>Bollinger Bands (Upper): ${data.upper_band || "N/A"}</p>
-        <p>Bollinger Bands (Middle): ${data.middle_band || "N/A"}</p>
-        <p>Bollinger Bands (Lower): ${data.lower_band || "N/A"}</p>
-        <p>On Balance Volume (OBV): ${data.obv || "N/A"}</p>
-        <p>Average True Range (ATR): ${data.atr || "N/A"}</p>
+        // Update key metrics
+        const savedMetrics = JSON.parse(localStorage.getItem("metrics"));
+        if (data.high_price != null) {
+          OPEN = data.open_price;
+          HIGH = data.high_price;
+          SMA = data.sma;
+          RSI = data.rsi;
+          VOL = data.volume / 1000000; // Normalize volume for display
+        } else if (savedMetrics) {
+          OPEN = savedMetrics.OPEN || OPEN;
+          HIGH = savedMetrics.HIGH || HIGH;
+          SMA = savedMetrics.SMA || SMA;
+          RSI = savedMetrics.RSI || RSI;
+          VOL = savedMetrics.VOL || VOL;
+        }
+
+        // Update trading status button styling
+        const tradingStatusButton = document.getElementById(
+          "tradingStatusButton"
+        );
+        if (data.isTradingEnabled) {
+          tradingStatusButton.classList.add("active");
+          tradingStatusButton.classList.remove("inactive");
+          tradingStatusButton.textContent = "Actively Trading";
+          tradingStatusButton.style.backgroundColor = "#28a745"; // Green
+        } else {
+          tradingStatusButton.classList.add("inactive");
+          tradingStatusButton.classList.remove("active");
+          tradingStatusButton.textContent = "Deactivated";
+          tradingStatusButton.style.backgroundColor = "#dc3545"; // Red
+        }
+
+        spawnGraphs();
+        fetchPortfolioData();
+
+        if (data.recentTrades != null) {
+          addFeedItems(data.recentTrades);
+        }
+
+        console.log("Fetched Bulk Data:", data);
+      }
+
+      // Fetch data on page load and every minute
+      window.addEventListener("load", () => {
+        fetchData(); // Run immediately on load
+        scheduleFetchData(); // Schedule periodic updates
+      });
+
+      function scheduleFetchData() {
+        const now = new Date();
+        const seconds = now.getSeconds();
+        const nextTrigger = new Date(now.getTime());
+
+        // Calculate the next minute
+        nextTrigger.setMinutes(now.getMinutes() + 1);
+        nextTrigger.setSeconds(0);
+        nextTrigger.setMilliseconds(0);
+
+        const timeToNextTrigger = nextTrigger - now;
+
+        setTimeout(() => {
+          fetchData();
+          setInterval(fetchData, 60000);
+        }, timeToNextTrigger);
+      }
+
+      async function fetchPortfolioData() {
+        const response = await fetch("/alpaca/fetchPortfolio");
+        const portfolioBox = document.getElementById("portfolioBox");
+        const loadingText = document.getElementById("portfolioLoading");
+        const spinner = document.getElementById("portfolioSpinner");
+        const chartCanvas = document.getElementById("portfolioChart");
+
+        if (response.ok) {
+          const portfolioData = await response.json();
+
+          const account = portfolioData.account;
+          const positions = portfolioData.positions;
+
+          const cash = parseFloat(account.cash).toFixed(2);
+          const portfolioValue = parseFloat(account.portfolio_value).toFixed(2);
+
+          spinner.style.display = "none";
+
+          const selectedStockData = positions.find(
+            (pos) => pos.symbol === symbol
+          );
+          const shares = selectedStockData ? selectedStockData.qty : 0;
+
+          portfolioBox.innerHTML = `
+              <p>Portfolio Value: $${portfolioValue}</p>
+              <p>Cash to Trade: $${cash}</p>
+              <p>Shares ${
+                document.getElementById("selectedStock1").textContent
+              }: ${shares}</p>
+              <canvas id="portfolioChart" width="400" height="300"></canvas>
+            `;
+
+          const ctx = document
+            .getElementById("portfolioChart")
+            .getContext("2d");
+          const labels = positions.map((pos) => pos.symbol);
+          const values = positions.map((pos) => parseFloat(pos.market_value));
+
+          new Chart(ctx, {
+            type: "doughnut",
+            data: {
+              labels: labels,
+              datasets: [
+                {
+                  data: values,
+                  backgroundColor: [
+                    "#FF6384",
+                    "#36A2EB",
+                    "#FFCE56",
+                    "#4BC0C0",
+                    "#9966FF",
+                  ],
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              plugins: {
+                legend: {
+                  position: "top",
+                },
+                tooltip: {
+                  callbacks: {
+                    label: function (tooltipItem) {
+                      const value = tooltipItem.raw / 100; // Adjust the value
+                      return `${tooltipItem.label}: ${value.toFixed(2)}%`;
+                    },
+                  },
+                },
+              },
+            },
+          });
+
+          portfolioBox.classList.add("loaded"); // Trigger transition to final content
+        } else {
+          console.error("Failed to fetch portfolio data:", response.status);
+          loadingText.textContent = "Error loading portfolio data.";
+        }
+      }
+
+      window.addEventListener("load", fetchPortfolioData);
+
+      document
+        .getElementById("tradingStatusButton")
+        .addEventListener("click", async function () {
+          const tradingStatusButton = document.getElementById(
+            "tradingStatusButton"
+          );
+
+          // Update UI styles
+          if (tradingStatusButton.classList.contains("active")) {
+            tradingStatusButton.classList.remove("active");
+            tradingStatusButton.classList.add("inactive");
+            tradingStatusButton.textContent = "Deactivated";
+            tradingStatusButton.style.backgroundColor = "#dc3545";
+          } else {
+            tradingStatusButton.classList.remove("inactive");
+            tradingStatusButton.classList.add("active");
+            tradingStatusButton.textContent = "Actively Trading";
+            tradingStatusButton.style.backgroundColor = "#28a745";
+          }
+
+          // Send a signal to the backend to toggle the trading status
+          try {
+            const response = await fetch("/sc/toggleTrader", {
+              method: "GET",
+            });
+
+            if (!response.ok) {
+              console.error(
+                "Failed to toggle trading status:",
+                response.status
+              );
+            } else {
+              console.log("Trading status toggled successfully.");
+            }
+          } catch (error) {
+            console.error("Error toggling trading status:", error);
+          }
+        });
+
+      function spawnGraphs() {
+        // Save metrics to localStorage
+        const metrics = { OPEN, HIGH, SMA, RSI, VOL };
+        localStorage.setItem("metrics", JSON.stringify(metrics));
+        // ** News Sentiment Gradient Rectangle **
+        const sentimentCanvas = document.getElementById("sentimentVisualizer");
+        const sentimentCtx = sentimentCanvas.getContext("2d");
+
+        // Clear previous content before drawing
+        sentimentCtx.clearRect(
+          0,
+          0,
+          sentimentCanvas.width,
+          sentimentCanvas.height
+        );
+
+        const sentimentData = {
+          positive: pos_news,
+          neutral: neu_news,
+          negative: neg_news,
+        };
+
+        const total =
+          sentimentData.positive +
+          sentimentData.neutral +
+          sentimentData.negative;
+        const positivePercentage = sentimentData.positive / total;
+        const neutralPercentage = sentimentData.neutral / total;
+        const negativePercentage = sentimentData.negative / total;
+
+        const sentimentWidth = sentimentCanvas.width;
+        const sentimentHeight = sentimentCanvas.height;
+        const positiveWidth = sentimentWidth * positivePercentage;
+        const neutralWidth = sentimentWidth * neutralPercentage;
+        const negativeWidth = sentimentWidth * negativePercentage;
+
+        const positiveColor = "#56D798";
+        const neutralColor = "#FFD97D";
+        const negativeColor = "#FF6B6B";
+
+        const positiveNeutralGradient = sentimentCtx.createLinearGradient(
+          0,
+          0,
+          positiveWidth + neutralWidth,
+          0
+        );
+        positiveNeutralGradient.addColorStop(0, positiveColor);
+        positiveNeutralGradient.addColorStop(1, neutralColor);
+
+        const neutralNegativeGradient = sentimentCtx.createLinearGradient(
+          positiveWidth,
+          0,
+          sentimentWidth,
+          0
+        );
+        neutralNegativeGradient.addColorStop(0, neutralColor);
+        neutralNegativeGradient.addColorStop(1, negativeColor);
+
+        sentimentCtx.fillStyle = positiveColor;
+        sentimentCtx.fillRect(0, 0, positiveWidth, sentimentHeight);
+
+        sentimentCtx.fillStyle = positiveNeutralGradient;
+        sentimentCtx.fillRect(positiveWidth, 0, neutralWidth, sentimentHeight);
+
+        sentimentCtx.fillStyle = neutralNegativeGradient;
+        sentimentCtx.fillRect(
+          positiveWidth + neutralWidth,
+          0,
+          negativeWidth,
+          sentimentHeight
+        );
+
+        // ** Bar Chart for Key Metrics **
+        const metricsCanvas = document.getElementById("metricsBarChart");
+
+        // Destroy existing chart instance, if any
+        if (metricsCanvas.chartInstance) {
+          metricsCanvas.chartInstance.destroy();
+        }
+
+        const metricValues = {
+          Open: OPEN,
+          High: HIGH,
+          SMA: SMA,
+          RSI: RSI,
+          Vol: VOL,
+        };
+
+        console.log("Metric Values:", metricValues);
+
+        metricsCanvas.chartInstance = new Chart(
+          metricsCanvas.getContext("2d"),
+          {
+            type: "bar",
+            data: {
+              labels: Object.keys(metricValues),
+              datasets: [
+                {
+                  label: "Value",
+                  data: Object.values(metricValues),
+                  backgroundColor: [
+                    "#ADD8E6", // Light Blue
+                    "#87CEEB", // Sky Blue
+                    "#4682B4", // Steel Blue
+                    "#6495ED", // Cornflower Blue
+                    "#1E90FF", // Dodger Blue
+                  ],
+                  borderRadius: 12, // Rounded corners
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              plugins: {
+                legend: {
+                  display: false,
+                },
+              },
+              scales: {
+                x: {
+                  ticks: {
+                    font: {
+                      size: 14,
+                      weight: "bold",
+                    },
+                  },
+                },
+                y: {
+                  beginAtZero: true,
+                  grid: {
+                    display: false,
+                  },
+                  ticks: {
+                    font: {
+                      size: 14,
+                      weight: "bold",
+                    },
+                  },
+                },
+              },
+            },
+          }
+        );
+      }
+
+      function addFeedItems(trades) {
+        const feedContent = document.getElementById("feedContent");
+
+        // Ensure trades is not null and is an array
+        if (trades && Array.isArray(trades)) {
+          // Loop through recent trades and add them to the top
+          trades.forEach((trade) => {
+            const newTradeHtml = `
+        <div class="trade-entry">
+          <p><strong>Trade:</strong> ${trade}</p>
+        </div>
       `;
 
-        // Insert new data at the top
-        feedContent.insertAdjacentHTML("afterbegin", newDataHtml);
+            // Insert new trade data at the top of the feed
+            feedContent.insertAdjacentHTML("afterbegin", newTradeHtml);
+          });
+        }
       }
     </script>
   </body>

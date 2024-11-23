@@ -3,11 +3,16 @@ package com.byteme;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.io.InputStream;
+import java.math.BigDecimal;
 
 public class DatabaseHandler {
 
@@ -36,7 +41,7 @@ public class DatabaseHandler {
     }
 
     // Method to create a table for the specific stock symbol if it doesn't exist
-    private void createTableIfNotExists(String stockSymbol) {
+    private void tryCreateStockTable(String stockSymbol) {
         String tableName = "stock_data_" + stockSymbol.toLowerCase();
         String sql = "CREATE TABLE IF NOT EXISTS " + tableName + " (" +
                 "date TIMESTAMP PRIMARY KEY, " +
@@ -64,16 +69,15 @@ public class DatabaseHandler {
 
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.execute();
-            System.out.println("Table '" + tableName + "' initialized or already exists.");
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
     // Method to insert or update data in the specific stock's table
-    public void insertOrUpdateData(Timestamp timestamp, String stockSymbol, int positiveCount, int neutralCount,
+    public void insertOrUpdateStockData(Timestamp timestamp, String stockSymbol, int positiveCount, int neutralCount,
             int negativeCount, Map<String, Object> indicatorData) {
-        createTableIfNotExists(stockSymbol); // Ensure the table exists
+        tryCreateStockTable(stockSymbol); // Ensure the table exists
 
         String tableName = "stock_data_" + stockSymbol.toLowerCase();
         StringBuilder columns = new StringBuilder(
@@ -154,12 +158,117 @@ public class DatabaseHandler {
         }
     }
 
+    private void tryCreateTradeTable(String stockSymbol) {
+        String tableName = "trade_data_" + stockSymbol.toLowerCase();
+        String sql = "CREATE TABLE IF NOT EXISTS " + tableName + " (" +
+                "date TIMESTAMP PRIMARY KEY, " +
+                "action VARCHAR(10), " + // e.g., "buy", "sell", "hold"
+                "quantity INT, " +
+                "price DECIMAL(10, 2), " + // Price of the stock
+                "info TEXT" + // Descriptive trade details
+                ");";
+
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.execute();
+            System.out.println("Trade table '" + tableName + "' created or already exists.");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Method to insert or update data in the specific stock's table
+    public void insertOrUpdateTradeData(Timestamp timestamp, String stockSymbol, String action, String quantity,
+            String price,
+            String info) {
+        tryCreateTradeTable(stockSymbol); // Ensure the trade table exists
+
+        String tableName = "trade_data_" + stockSymbol.toLowerCase();
+        String sql = "INSERT INTO " + tableName + " (date, action, quantity, price, info) " +
+                "VALUES (?, ?, ?, ?, ?) " +
+                "ON DUPLICATE KEY UPDATE " +
+                "action = VALUES(action), " +
+                "quantity = VALUES(quantity), " +
+                "price = VALUES(price), " + // Fixed this line
+                "info = VALUES(info);";
+
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setTimestamp(1, timestamp);
+            pstmt.setString(2, action);
+            pstmt.setInt(3, Integer.parseInt(quantity));
+            pstmt.setBigDecimal(4, new BigDecimal(price)); // Convert price to BigDecimal
+            pstmt.setString(5, info);
+
+            pstmt.executeUpdate();
+            System.out.println("Trade data successfully inserted/updated in table '" + tableName + "'.");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Fetch the latest row of data from the stock's table
+    public Map<String, Object> getLastRowOfStockData(String stockSymbol) {
+        String tableName = "stock_data_" + stockSymbol.toLowerCase();
+        String sql = "SELECT * FROM " + tableName + " ORDER BY date DESC LIMIT 1;";
+        Map<String, Object> latestRowData = new HashMap<>();
+
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                latestRowData.put("date", rs.getTimestamp("date"));
+                latestRowData.put("num_positive_articles", rs.getInt("num_positive_articles"));
+                latestRowData.put("num_neutral_articles", rs.getInt("num_neutral_articles"));
+                latestRowData.put("num_negative_articles", rs.getInt("num_negative_articles"));
+                latestRowData.put("open_price", rs.getDouble("open_price"));
+                latestRowData.put("previous_close_price", rs.getDouble("previous_close_price"));
+                latestRowData.put("high_price", rs.getDouble("high_price"));
+                latestRowData.put("low_price", rs.getDouble("low_price"));
+                latestRowData.put("close_price", rs.getDouble("close_price"));
+                latestRowData.put("volume", rs.getLong("volume"));
+                latestRowData.put("sma", rs.getDouble("sma"));
+                latestRowData.put("ema", rs.getDouble("ema"));
+                latestRowData.put("rsi", rs.getDouble("rsi"));
+                latestRowData.put("macd", rs.getDouble("macd"));
+                latestRowData.put("macd_signal", rs.getDouble("macd_signal"));
+                latestRowData.put("macd_hist", rs.getDouble("macd_hist"));
+                latestRowData.put("upper_band", rs.getDouble("upper_band"));
+                latestRowData.put("middle_band", rs.getDouble("middle_band"));
+                latestRowData.put("lower_band", rs.getDouble("lower_band"));
+                latestRowData.put("obv", rs.getLong("obv"));
+                latestRowData.put("atr", rs.getDouble("atr"));
+            }
+        } catch (SQLException e) {
+            System.out.println("Error fetching the last row of data: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return latestRowData;
+    }
+
+    public List<String> getLast10RowsOfTradeData(String stockSymbol) {
+        List<String> tradeInfoList = new ArrayList<>();
+        String tableName = "trade_data_" + stockSymbol.toLowerCase();
+        String sql = "SELECT info FROM " + tableName + " ORDER BY date DESC LIMIT 10;";
+
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            ResultSet rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                tradeInfoList.add(rs.getString("info")); // Add the `info` column value to the list
+            }
+        } catch (SQLException e) {
+            System.err.println("Error fetching last 10 rows of trade data for " + stockSymbol + ": " + e.getMessage());
+        }
+
+        return tradeInfoList;
+    }
+
     // Close the database connection done
     public void closeConnection() {
         try {
             if (connection != null && !connection.isClosed()) {
                 connection.close();
-                System.out.println("Database connection closed.");
+                System.out.println("Database connection closed.\n");
             }
         } catch (SQLException e) {
             e.printStackTrace();
