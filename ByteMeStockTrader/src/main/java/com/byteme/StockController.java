@@ -1,5 +1,6 @@
 package com.byteme;
 
+import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,11 +22,11 @@ public class StockController {
         this.stockService = stockService;
     }
 
-    @GetMapping("/fetchData")
+    @GetMapping("/fetchPortfolioData")
     public ResponseEntity<Map<String, Object>> fetchData() {
-        System.out.println("Fetching bulk data endpoint hit."); // Debug print
         Map<String, Object> data = stockService.getPortfolioData();
         System.out.println("\nData fetched by portfolio.html: " + data + "\n"); // Debug print
+        System.out.println("Data.recentTrades: " + data.get("recentTrades") + "\n"); // Debug print
         return ResponseEntity.ok(data);
     }
 
@@ -45,4 +46,25 @@ public class StockController {
         return ResponseEntity.ok(success);
     }
 
+    @PostMapping("/uploadTradeData")
+    public ResponseEntity<String> uploadTradeData(@RequestBody Map<String, Object> tradeDetails) {
+        System.out.println("Received trade details: " + tradeDetails);
+
+        // Extract fields from the JSON payload
+        String symbol = (String) tradeDetails.get("symbol");
+        String action = (String) tradeDetails.get("action");
+        String quantity = tradeDetails.get("quantity").toString();
+        String price = tradeDetails.get("price").toString();
+        String info = (String) tradeDetails.get("info");
+
+        // Upload trade data to the database
+        boolean isUploaded = stockService.uploadTradeDataToDatabase(symbol, new String[] { action, quantity, price },
+                info);
+
+        if (isUploaded) {
+            return ResponseEntity.ok("Trade details uploaded successfully!");
+        } else {
+            return ResponseEntity.status(HttpStatus.SC_INTERNAL_SERVER_ERROR).body("Failed to upload trade details.");
+        }
+    }
 }

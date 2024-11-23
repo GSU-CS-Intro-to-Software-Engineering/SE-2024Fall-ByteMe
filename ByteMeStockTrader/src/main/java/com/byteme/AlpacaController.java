@@ -4,10 +4,15 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.RestTemplate;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -66,12 +71,14 @@ public class AlpacaController {
 
     @PostMapping("/execute-trade")
     public ResponseEntity<?> executeTrade(@RequestBody Map<String, Object> tradeDetails) {
+        System.out.println("Executing trade with details: " + tradeDetails);
         if (apiKey == null || apiSecret == null || tradingType == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Not authenticated. Please log in.");
         }
 
         String action = (String) tradeDetails.get("action"); // "buy" or "sell"
         int quantity = (int) tradeDetails.get("quantity");
+        String symbol = (String) tradeDetails.get("symbol"); // Ensure symbol is passed
 
         String alpacaOrdersUrl = tradingType.equalsIgnoreCase("cash")
                 ? "https://api.alpaca.markets/v2/orders"
@@ -95,7 +102,20 @@ public class AlpacaController {
                     String.class);
 
             if (response.getStatusCode() == HttpStatus.OK || response.getStatusCode() == HttpStatus.CREATED) {
-                return ResponseEntity.ok("Trade executed successfully: " + response.getBody());
+                // Parse the response body to extract the filled price
+                ObjectMapper objectMapper = new ObjectMapper();
+                JsonNode jsonResponse = objectMapper.readTree(response.getBody());
+                String filledPrice = jsonResponse.get("filled_avg_price").asText();
+
+                // Add the filled price to the response
+                Map<String, Object> result = new HashMap<>();
+                result.put("message", "Trade executed successfully.");
+                result.put("symbol", symbol);
+                result.put("quantity", quantity);
+                result.put("action", action);
+                result.put("price", filledPrice);
+
+                return ResponseEntity.ok(result);
             } else {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body("Failed to execute trade: " + response.getBody());
@@ -103,9 +123,7 @@ public class AlpacaController {
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("An error occurred while executing the trade. quantity: " + quantity + " action: " + action
-                            + " symbol: " + symbol + " error: "
-                            + e.getMessage());
+                    .body("An error occurred while executing the trade: " + e.getMessage());
         }
     }
 

@@ -18,6 +18,7 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -25,7 +26,7 @@ public class StockService {
 
     private final Map<LocalDate, int[]> dailyNewsSentimentCache = new HashMap<>(); // Cache news sentiment
     private final Map<String, Object> latestStockData = new HashMap<>();
-    private int uploadCounter = 9; // Track uploads since market open
+    private int uploadCounter = 0; // Track uploads since market open
     private boolean isTradingEnabled = false;
     private String symbol = "NVDA";
 
@@ -36,6 +37,28 @@ public class StockService {
         latestStockData.clear(); // Clear old data
         uploadCounter = 0; // Reset upload counter
         return true;
+    }
+
+    @Scheduled(cron = "0 0/10 9-16 * * MON-FRI", zone = "America/New_York")
+    public void scheduleStockDataFetch() {
+
+        System.out.println("Scheduled task triggered at " + LocalTime.now());
+        if (isTradingEnabled && isMarketOpen()) {
+            System.out.println("Fetching stock data for " + symbol);
+            boolean result = gatherStockData(symbol);
+
+            // Increment upload counter
+            if (result) {
+                uploadCounter++;
+                System.out.println("Upload Counter: " + uploadCounter);
+
+                if (uploadCounter >= 10) {
+                    analyzeAndTrade(symbol);
+                }
+            }
+        } else {
+            System.out.println("Market is closed or trading is disabled. Skipping data fetch.");
+        }
     }
 
     public int getUploadCounter() {
@@ -56,13 +79,24 @@ public class StockService {
             if (latestStockData.isEmpty()) {
                 DatabaseHandler dbHandler = new DatabaseHandler();
                 // Fetch the latest row of data from the database
-                Map<String, Object> lastRowData = dbHandler.getLastRowOfData(symbol);
+                Map<String, Object> lastRowStockData = dbHandler.getLastRowOfStockData(symbol);
+
+                List<String> last10RowsTradeInfo = dbHandler.getLast10RowsOfTradeData(symbol);
+
                 dbHandler.closeConnection();
-                if (!lastRowData.isEmpty()) {
-                    latestStockData.putAll(lastRowData); // Populate latestStockData with the fetched row
-                    System.out.println("Populated latestStockData from the database: " + lastRowData);
+                if (!lastRowStockData.isEmpty()) {
+                    latestStockData.putAll(lastRowStockData); // Populate latestStockData with the fetched row
+                    System.out.println("Populated latestStockData from the database: " + lastRowStockData);
                 } else {
                     System.out.println("No data found in the database for symbol: " + symbol);
+                }
+
+                if (!last10RowsTradeInfo.isEmpty()) {
+                    latestStockData.put("recentTrades", last10RowsTradeInfo); // Add the 10 most recent trades to the
+                                                                              // map
+                    System.out.println("Added last 10 rows of trade info: " + last10RowsTradeInfo);
+                } else {
+                    System.out.println("No recent trades found in the database for symbol: " + symbol);
                 }
             }
         }
@@ -76,32 +110,10 @@ public class StockService {
         return bulkData;
     }
 
-    @Scheduled(cron = "0 0/1 9-16 * * MON-SAT", zone = "America/New_York")
-    public void scheduleStockDataFetch() {
-        System.out.println("Scheduled task triggered at " + LocalTime.now());
-        if (isTradingEnabled && isMarketOpen()) {
-            System.out.println("Fetching stock data for " + symbol);
-            boolean result = gatherStockData(symbol);
-
-            // Increment upload counter
-            if (result) {
-                uploadCounter++;
-                System.out.println("Upload Counter: " + uploadCounter);
-
-                if (uploadCounter >= 10) {
-                    analyzeAndTrade(symbol);
-                }
-            }
-        } else {
-            System.out.println("Market is closed or trading is disabled. Skipping data fetch.");
-        }
-    }
-
     private boolean isMarketOpen() {
-        return true; // meow
-        // LocalTime now = LocalTime.now(ZoneId.of("America/New_York"));
-        // return !now.isBefore(LocalTime.of(9, 30)) && !now.isAfter(LocalTime.of(16,
-        // 0));
+        LocalTime now = LocalTime.now(ZoneId.of("America/New_York"));
+        return !now.isBefore(LocalTime.of(9, 30)) && !now.isAfter(LocalTime.of(16,
+                0));
     }
 
     public synchronized boolean gatherStockData(String symbol) {
@@ -115,7 +127,7 @@ public class StockService {
             return false;
         }
 
-        boolean uploadSuccess = uploadDataToDatabase(symbol, newsSentiment, indicatorData); // meow
+        boolean uploadSuccess = uploadStockDataToDatabase(symbol, newsSentiment, indicatorData);
 
         latestStockData.clear(); // Clear old data
 
@@ -251,7 +263,8 @@ public class StockService {
         }
     }
 
-    public static boolean uploadDataToDatabase(String symbol, int[] newsSentiment, Map<String, Object> indicatorData) {
+    public static boolean uploadStockDataToDatabase(String symbol, int[] newsSentiment,
+            Map<String, Object> indicatorData) {
         try {
             DatabaseHandler dbHandler = new DatabaseHandler();
             Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis());
@@ -262,7 +275,8 @@ public class StockService {
             System.out.println("Indicators: " + indicatorData);
 
             // Insert or update the data for the specific stock
-            dbHandler.insertOrUpdateData(currentTimestamp, symbol, newsSentiment[0], newsSentiment[1], newsSentiment[2],
+            dbHandler.insertOrUpdateStockData(currentTimestamp, symbol, newsSentiment[0], newsSentiment[1],
+                    newsSentiment[2],
                     indicatorData);
 
             dbHandler.closeConnection();
@@ -304,6 +318,23 @@ public class StockService {
         } catch (Exception e) {
             System.err.println("Error while running Python script: " + e.getMessage());
             e.printStackTrace();
+        }
+    }
+
+    public boolean uploadTradeDataToDatabase(String symbol, String[] tradeDetails, String info) {
+        try {
+            DatabaseHandler dbHandler = new DatabaseHandler();
+            Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis());
+
+            // Insert trade data into the specific stock's table
+            dbHandler.insertOrUpdateTradeData(currentTimestamp, symbol, tradeDetails[0], tradeDetails[1],
+                    tradeDetails[2], info);
+
+            dbHandler.closeConnection();
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
         }
     }
 

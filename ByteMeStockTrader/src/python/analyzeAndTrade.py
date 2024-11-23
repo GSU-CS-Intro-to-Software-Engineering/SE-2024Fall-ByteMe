@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 import xgboost as xgb
 import joblib
+import requests
 
 # Explicitly define database configuration
 DB_CONFIG = {
@@ -17,8 +18,9 @@ DB_CONFIG = {
     'password': 'bucgo8-pafkyq-giFqoz'
 }
 
-# AlpacaController endpoint
+# Rest API URLs
 ALPACA_CONTROLLER_URL = "http://localhost:8080/api/execute-trade"
+UPLOAD_TRADE_DATA_URL = "http://localhost:8080/sc/uploadTradeData"
 
 # Load Pre-Trained Model
 MODEL_PATH = "Zekrom_Scaled_Tuned.json"
@@ -140,7 +142,8 @@ def determine_action(predictions, last_close):
 
 def execute_trade(action, quantity, symbol):
     """
-    Send trade details to AlpacaController to execute a trade.
+    Send trade details to AlpacaController to execute a trade and fetch execution price,
+    and log trade details to the API.
     """
     trade_details = {
         "action": action,
@@ -149,13 +152,40 @@ def execute_trade(action, quantity, symbol):
     }
 
     try:
+        # Send trade request to Alpaca
         response = requests.post(ALPACA_CONTROLLER_URL, json=trade_details)
+
         if response.status_code == 200:
-            print(f"Trade executed successfully: {response.json()}")
+            trade_response = response.json()
+            price = trade_response.get("price", 0.0)  # Extract execution price (default to 0.0 if missing)
+            print(f"Trade executed successfully: {trade_response}")
+
+            # Add price and info to the trade details
+            trade_details["price"] = price
+            trade_details["info"] = f"{action.capitalize()} {quantity} shares of {symbol} at ${price} each."
+
         else:
-            print(f"Failed to execute trade. HTTP {response.status_code}: {response.text}")
+            # Handle failed Alpaca response
+            print(f"Failed to execute trade via Alpaca. HTTP {response.status_code}: {response.text}")
+            # Use a default/fake price if Alpaca fails
+            trade_details["price"] = 150.0  # Placeholder price
+            trade_details["info"] = f"{action.capitalize()} {quantity} shares of {symbol}. Trade not executed on Alpaca."
+
+        # Log trade details to the API (successful or fallback)
+        upload_response = requests.post(UPLOAD_TRADE_DATA_URL, json=trade_details)
+
+        # Log raw payload and response for debugging
+        print(f"Payload sent to {UPLOAD_TRADE_DATA_URL}: {trade_details}")
+        print(f"Raw response: {upload_response.text}")
+
+        if upload_response.status_code == 200:
+            print(f"Trade details uploaded successfully: {upload_response.text}")
+        else:
+            print(f"Failed to upload trade details. HTTP {upload_response.status_code}: {upload_response.text}")
+
     except requests.RequestException as e:
-        print(f"Error sending trade request to AlpacaController: {e}")
+        print(f"Error communicating with Alpaca or API: {e}")
+
 
 def main(symbol):
     """
@@ -189,6 +219,24 @@ def main(symbol):
         execute_trade("sell", quantity, symbol)
     else:
         print("Hold decision. No trade executed.")
+        # Define trade_details for the "hold" case
+        trade_details = {
+            "symbol": symbol,
+            "action": "hold",
+            "quantity": 0,
+            "price": 0,  # No price for a hold action
+            "info": f"Held position on {symbol}. No trade executed."
+        }
+
+        try:
+            # Log the hold action to the API
+            upload_response = requests.post(UPLOAD_TRADE_DATA_URL, json=trade_details)
+            if upload_response.status_code == 200:
+                print(f"Hold action logged successfully: {upload_response.text}")
+            else:
+                print(f"Failed to log hold action. HTTP {upload_response.status_code}: {upload_response.text}")
+        except requests.RequestException as e:
+            print(f"Error logging hold action: {e}")
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:

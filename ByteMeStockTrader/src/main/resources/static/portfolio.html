@@ -143,7 +143,7 @@
       let metricsChartInstance = null;
 
       async function fetchData() {
-        const response = await fetch("/sc/fetchData");
+        const response = await fetch("/sc/fetchPortfolioData");
         const data = await response.json();
 
         // Update stock symbol and upload counter
@@ -160,12 +160,19 @@
         }
 
         // Update key metrics
+        const savedMetrics = JSON.parse(localStorage.getItem("metrics"));
         if (data.high_price != null) {
           OPEN = data.open_price;
           HIGH = data.high_price;
           SMA = data.sma;
           RSI = data.rsi;
           VOL = data.volume / 1000000; // Normalize volume for display
+        } else if (savedMetrics) {
+          OPEN = savedMetrics.OPEN || OPEN;
+          HIGH = savedMetrics.HIGH || HIGH;
+          SMA = savedMetrics.SMA || SMA;
+          RSI = savedMetrics.RSI || RSI;
+          VOL = savedMetrics.VOL || VOL;
         }
 
         // Update trading status button styling
@@ -186,6 +193,10 @@
 
         spawnGraphs();
         fetchPortfolioData();
+
+        if (data.recentTrades != null) {
+          addFeedItems(data.recentTrades);
+        }
 
         console.log("Fetched Bulk Data:", data);
       }
@@ -240,7 +251,9 @@
           portfolioBox.innerHTML = `
               <p>Portfolio Value: $${portfolioValue}</p>
               <p>Cash to Trade: $${cash}</p>
-              <p>Shares ${symbol}: ${shares}</p>
+              <p>Shares ${
+                document.getElementById("selectedStock1").textContent
+              }: ${shares}</p>
               <canvas id="portfolioChart" width="400" height="300"></canvas>
             `;
 
@@ -334,6 +347,9 @@
         });
 
       function spawnGraphs() {
+        // Save metrics to localStorage
+        const metrics = { OPEN, HIGH, SMA, RSI, VOL };
+        localStorage.setItem("metrics", JSON.stringify(metrics));
         // ** News Sentiment Gradient Rectangle **
         const sentimentCanvas = document.getElementById("sentimentVisualizer");
         const sentimentCtx = sentimentCanvas.getContext("2d");
@@ -473,6 +489,25 @@
             },
           }
         );
+      }
+
+      function addFeedItems(trades) {
+        const feedContent = document.getElementById("feedContent");
+
+        // Ensure trades is not null and is an array
+        if (trades && Array.isArray(trades)) {
+          // Loop through recent trades and add them to the top
+          trades.forEach((trade) => {
+            const newTradeHtml = `
+        <div class="trade-entry">
+          <p><strong>Trade:</strong> ${trade}</p>
+        </div>
+      `;
+
+            // Insert new trade data at the top of the feed
+            feedContent.insertAdjacentHTML("afterbegin", newTradeHtml);
+          });
+        }
       }
     </script>
   </body>

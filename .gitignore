@@ -28,3 +28,5 @@ ByteMeStockTrader/.project
 pom.properties
 
 Model_Training/*
+
+ByteMeStockTrader/src/python/test_analyzeAndTrade.py
