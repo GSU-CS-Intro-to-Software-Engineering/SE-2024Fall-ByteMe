@@ -3,8 +3,10 @@ package com.byteme;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.io.InputStream;
@@ -64,7 +66,6 @@ public class DatabaseHandler {
 
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.execute();
-            System.out.println("Table '" + tableName + "' initialized or already exists.");
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -154,12 +155,52 @@ public class DatabaseHandler {
         }
     }
 
+    // Fetch the latest row of data from the stock's table
+    public Map<String, Object> getLastRowOfData(String stockSymbol) {
+        String tableName = "stock_data_" + stockSymbol.toLowerCase();
+        String sql = "SELECT * FROM " + tableName + " ORDER BY date DESC LIMIT 1;";
+        Map<String, Object> latestRowData = new HashMap<>();
+
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                latestRowData.put("date", rs.getTimestamp("date"));
+                latestRowData.put("num_positive_articles", rs.getInt("num_positive_articles"));
+                latestRowData.put("num_neutral_articles", rs.getInt("num_neutral_articles"));
+                latestRowData.put("num_negative_articles", rs.getInt("num_negative_articles"));
+                latestRowData.put("open_price", rs.getDouble("open_price"));
+                latestRowData.put("previous_close_price", rs.getDouble("previous_close_price"));
+                latestRowData.put("high_price", rs.getDouble("high_price"));
+                latestRowData.put("low_price", rs.getDouble("low_price"));
+                latestRowData.put("close_price", rs.getDouble("close_price"));
+                latestRowData.put("volume", rs.getLong("volume"));
+                latestRowData.put("sma", rs.getDouble("sma"));
+                latestRowData.put("ema", rs.getDouble("ema"));
+                latestRowData.put("rsi", rs.getDouble("rsi"));
+                latestRowData.put("macd", rs.getDouble("macd"));
+                latestRowData.put("macd_signal", rs.getDouble("macd_signal"));
+                latestRowData.put("macd_hist", rs.getDouble("macd_hist"));
+                latestRowData.put("upper_band", rs.getDouble("upper_band"));
+                latestRowData.put("middle_band", rs.getDouble("middle_band"));
+                latestRowData.put("lower_band", rs.getDouble("lower_band"));
+                latestRowData.put("obv", rs.getLong("obv"));
+                latestRowData.put("atr", rs.getDouble("atr"));
+            }
+        } catch (SQLException e) {
+            System.out.println("Error fetching the last row of data: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return latestRowData;
+    }
+
     // Close the database connection done
     public void closeConnection() {
         try {
             if (connection != null && !connection.isClosed()) {
                 connection.close();
-                System.out.println("Database connection closed.");
+                System.out.println("Database connection closed.\n");
             }
         } catch (SQLException e) {
             e.printStackTrace();

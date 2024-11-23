@@ -11,7 +11,7 @@ import org.springframework.http.HttpMethod;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/alpaca")
 public class AlpacaController {
 
     private static String apiKey;
@@ -52,19 +52,9 @@ public class AlpacaController {
         }
     }
 
-    @GetMapping("/current-symbol")
-    public ResponseEntity<String> getCurrentSymbol() {
-        if (symbol != null && !symbol.isEmpty()) {
-            return ResponseEntity.ok(symbol);
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No symbol set.");
-        }
-    }
-
     @PostMapping("/update-stock")
     public ResponseEntity<?> updateStock(@RequestBody Map<String, String> stockMap) {
         try {
-            System.out.println("Received payload: " + stockMap); // Debug log
             symbol = stockMap.get("selectedStock"); // Retrieve selectedStock
             System.out.println("Updated symbol: " + symbol); // Confirm it was updated
             return ResponseEntity.ok("Stock symbol updated successfully.");
@@ -119,7 +109,7 @@ public class AlpacaController {
         }
     }
 
-    @GetMapping("/portfolio")
+    @GetMapping("/fetchPortfolio")
     public ResponseEntity<?> getPortfolioData() {
         if (apiKey == null || apiSecret == null || tradingType == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Not authenticated. Please log in.");

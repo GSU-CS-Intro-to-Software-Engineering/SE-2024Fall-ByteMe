@@ -69,7 +69,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const apiSecret = document.getElementById("apiSecret").value;
 
       try {
-        const response = await fetch("/api/authenticate", {
+        const response = await fetch("/alpaca/authenticate", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -151,12 +151,13 @@ document.addEventListener("DOMContentLoaded", function () {
   if (stockNextButton) {
     stockNextButton.addEventListener("click", async (event) => {
       event.preventDefault();
-
+  
       if (selectedStock) {
         console.log("Selected Stock:", selectedStock);
-        //send actively traded stock to AlpacaController
+  
         try {
-          const response = await fetch("/api/update-stock", {
+          // Send actively traded stock to AlpacaController
+          const alpacaResponse = await fetch("/alpaca/update-stock", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -164,20 +165,34 @@ document.addEventListener("DOMContentLoaded", function () {
             body: JSON.stringify({ selectedStock }),
           });
   
-          if (response.ok) {
+          if (!alpacaResponse.ok) {
+            console.error("Failed to update stock with Alpaca.");
+            alert("Failed to update stock in Alpaca. Please try again.");
+            return;
+          }
+  
+          // Send actively traded stock to StockController
+          const stockResponse = await fetch("/sc/update-stock", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ selectedStock }),
+          });
+  
+          if (stockResponse.ok) {
             window.location.href = "/portfolio.html";
           } else {
+            console.error("Failed to update stock with StockController.");
             alert("Cannot update stock at this time. Please try again.");
           }
         } catch (error) {
-          console.error("Error updating stock with Alpaca:", error);
+          console.error("Error occurred during stock updates:", error);
           alert("An error occurred. Please try again.");
         }
-        
       }
     });
   }
-
   const backButton = document.getElementById("backButton");
   if (backButton) {
     backButton.addEventListener("click", function () {
