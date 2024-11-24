@@ -128,7 +128,7 @@
     </div>
 
     <script>
-      let symbol = "NVDA";
+      let symbol;
 
       let pos_news = 5;
       let neu_news = 1;
@@ -153,9 +153,9 @@
         document.getElementById("selectedStock1").textContent = data.symbol;
         document.getElementById("selectedStock2").textContent = data.symbol;
 
-        if (data.positiveSentiment != null && data.positiveSentiment != 0) {
+        if (data.positiveSentiment != null) {
           pos_news = data.positiveSentiment;
-          neutralSentiment = data.neutralSentiment;
+          neu_news = data.neutralSentiment;
           neg_news = data.negativeSentiment;
         }
 
@@ -242,6 +242,8 @@
           const portfolioValue = parseFloat(account.portfolio_value).toFixed(2);
 
           spinner.style.display = "none";
+
+          symbol = document.getElementById("selectedStock1").textContent;
 
           const selectedStockData = positions.find(
             (pos) => pos.symbol === symbol

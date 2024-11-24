@@ -17,6 +17,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,15 +36,16 @@ public class StockService {
         this.symbol = symbol;
         isTradingEnabled = true;
         latestStockData.clear(); // Clear old data
+        dailyNewsSentimentCache.clear();
         uploadCounter = 0; // Reset upload counter
         return true;
     }
 
-    @Scheduled(cron = "0 0/10 9-16 * * MON-FRI", zone = "America/New_York")
+    @Scheduled(cron = "0 0/1 9-16 * * MON-SUN", zone = "America/New_York")
     public void scheduleStockDataFetch() {
 
         System.out.println("Scheduled task triggered at " + LocalTime.now());
-        if (isTradingEnabled && isMarketOpen()) {
+        if (isTradingEnabled) { // && isMarketOpen()
             System.out.println("Fetching stock data for " + symbol);
             boolean result = gatherStockData(symbol);
 
@@ -118,8 +120,8 @@ public class StockService {
 
     public synchronized boolean gatherStockData(String symbol) {
         boolean isNVDA = symbol == "NVDA";
-        int[] newsSentiment = { isNVDA ? 6 : 3, isNVDA ? 2 : 4, isNVDA ? 1 : 5 }; // getNewsSentimentForDay(symbol);
-                                                                                  // meow (unused for speed purp.)
+        int[] newsSentiment = getNewsSentimentForDay(symbol);
+        // meow (unused for speed purp.)
 
         Map<String, Object> indicatorData = gatherIndicatorData(symbol);
 
@@ -154,8 +156,10 @@ public class StockService {
     private int[] getNewsSentimentForDay(String symbol) {
         LocalDate today = LocalDate.now(ZoneId.of("America/New_York"));
         if (dailyNewsSentimentCache.containsKey(today)) {
+            int[] cachedSentiment = dailyNewsSentimentCache.get(today);
+            System.out.println("News sentiment already fetched for today: " + Arrays.toString(cachedSentiment));
             // Return cached sentiment if already fetched
-            return new int[] { 0, 0, 0 };
+            return cachedSentiment;
         } else {
             int[] newsSentiment = gatherNewsSentiment(symbol);
             if (newsSentiment != null) {
