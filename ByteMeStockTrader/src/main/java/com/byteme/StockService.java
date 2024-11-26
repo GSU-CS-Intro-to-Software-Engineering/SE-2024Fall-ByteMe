@@ -41,11 +41,11 @@ public class StockService {
         return true;
     }
 
-    @Scheduled(cron = "0 0/1 9-16 * * MON-SUN", zone = "America/New_York")
+    @Scheduled(cron = "0 0/10 9-16 * * MON-FRI", zone = "America/New_York")
     public void scheduleStockDataFetch() {
 
         System.out.println("Scheduled task triggered at " + LocalTime.now());
-        if (isTradingEnabled) { // && isMarketOpen()
+        if (isTradingEnabled && isMarketOpen()) {
             System.out.println("Fetching stock data for " + symbol);
             boolean result = gatherStockData(symbol);
 
@@ -120,7 +120,7 @@ public class StockService {
 
     public synchronized boolean gatherStockData(String symbol) {
         boolean isNVDA = symbol == "NVDA";
-        int[] newsSentiment = getNewsSentimentForDay(symbol);
+        int[] newsSentiment = { isNVDA ? 5 : 2, isNVDA ? 1 : 5, isNVDA ? 2 : 6 };// getNewsSentimentForDay(symbol);
         // meow (unused for speed purp.)
 
         Map<String, Object> indicatorData = gatherIndicatorData(symbol);
